@@ -97,4 +97,46 @@ public class RSAEncryption {
 				StandardCharsets.UTF_8);
 		return decryptedMessage;
 	}
+
+	/**
+	 * Should only be used with small files!
+	 * 
+	 * @param input
+	 * @param output
+	 * @throws IOException
+	 * @throws NoSuchPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 */
+	public void encryptFile(File input, File output)
+			throws IOException, NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException,
+			IllegalBlockSizeException, BadPaddingException {
+		byte[] fileBytes = Files.readAllBytes(input.toPath());
+
+		Cipher encryptCipher = Cipher.getInstance("RSA");
+		encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+		byte[] encryptedFileBytes = encryptCipher.doFinal(fileBytes);
+
+		try (FileOutputStream stream = new FileOutputStream(output)) {
+			stream.write(encryptedFileBytes);
+		}
+	}
+
+	public void decryptFile(File input, File output)
+			throws IOException, NoSuchAlgorithmException,
+			NoSuchPaddingException, InvalidKeyException,
+			IllegalBlockSizeException, BadPaddingException {
+		byte[] encryptedFileBytes = Files.readAllBytes(input.toPath());
+		Cipher decryptCipher = Cipher.getInstance("RSA");
+		
+		decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
+		byte[] decryptedFileBytes = decryptCipher.doFinal(encryptedFileBytes);
+		
+		try (FileOutputStream stream = new FileOutputStream(output)) {
+			stream.write(decryptedFileBytes);
+		}
+	}
 }
