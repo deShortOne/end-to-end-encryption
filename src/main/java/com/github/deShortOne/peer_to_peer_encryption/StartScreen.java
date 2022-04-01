@@ -63,16 +63,15 @@ public class StartScreen {
 		Button login = new Button("Log in");
 		login.setId("LoginButton");
 		login.setOnAction(e -> {
-			if (signInMode.getText().equals("Log in")) {
-				boolean goodInput = loginUsernameAndPassword(
-						usernameInput.getText(), passwordInput.getText());
-				if (goodInput) {
-					outputMsg.setText("Success!");
-				} else {
-					outputMsg.setText("Username or password incorrect");
-				}
-			} else {
+			if (!signInMode.getText().equals("Log in")) {
 				signInMode.setText("Log in");
+			}
+			boolean goodInput = loginUsernameAndPassword(
+					usernameInput.getText(), passwordInput.getText());
+			if (goodInput) {
+				outputMsg.setText("Success!");
+			} else {
+				outputMsg.setText("Username or password incorrect");
 			}
 
 		});
@@ -81,19 +80,17 @@ public class StartScreen {
 		Button signIn = new Button("Sign up");
 		signIn.setId("SignupButton");
 		signIn.setOnAction(e -> {
-			if (signInMode.getText().equals("Sign up")) {
-				boolean goodInput = signupUsernameAndPassword(
-						usernameInput.getText(), passwordInput.getText());
-				if (goodInput) {
-					outputMsg.setText("Sign up success!");
-					// Proceed to login?
-				} else {
-					outputMsg.setText("Username already taken");
-				}
-			} else {
+			if (!signInMode.getText().equals("Sign up")) {
 				signInMode.setText("Sign up");
+				outputMsg.setText("");
 			}
-
+			boolean goodInput = signupUsernameAndPassword(
+					usernameInput.getText(), passwordInput.getText());
+			if (goodInput) {
+				outputMsg.setText("Sign up success!");
+			} else {
+				outputMsg.setText("Username already taken");
+			}
 		});
 		grid.add(signIn, 1, 6);
 

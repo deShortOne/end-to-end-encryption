@@ -65,33 +65,29 @@ public class StartScreenTest {
 		String username = "hidden_User1";
 		String password = "lowbattery";
 
-		robot.doubleClickOn(usernameInput);
-		robot.write(username);
-		robot.doubleClickOn(passwordInput);
-		robot.write(password);
-
+		robot.doubleClickOn(usernameInput).write(username);
+		robot.doubleClickOn(passwordInput).write(password);
+		
 		// No user with this username exist so login fails
 		robot.clickOn(login);
 		Assertions.assertEquals("Username or password incorrect",
 				outputMsg.getText());
 
 		// No user with this username exists so sign up succeeds
-		robot.doubleClickOn(signup);
+		robot.clickOn(signup);
 		Assertions.assertEquals("Sign up success!", outputMsg.getText());
 
 		// Username with correct password so log in succeeds
-		robot.doubleClickOn(login);
+		robot.clickOn(login);
 		Assertions.assertEquals("Success!", outputMsg.getText());
 
 		// Already exists username with this username so sign up fails
-		robot.doubleClickOn(signup);
+		robot.clickOn(signup);
 		Assertions.assertEquals("Username already taken", outputMsg.getText());
 
 		// Username with incorrect password so login fails
 		
-		robot.doubleClickOn(passwordInput);
-		robot.write("asdf");
-		robot.doubleClickOn(login);
+		robot.doubleClickOn(passwordInput).write("asdf").clickOn(login);
 		Assertions.assertEquals("Username or password incorrect",
 				outputMsg.getText());
 	}
