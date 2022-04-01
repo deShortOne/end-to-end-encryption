@@ -15,6 +15,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
@@ -43,30 +44,58 @@ public class StartScreen {
 		Text usernameText = new Text("Username");
 		grid.add(usernameText, 0, 1, 2, 1);
 
-		TextField username = new TextField("Username");
-		grid.setId("usernameInput");
-		grid.add(username, 0, 2);
+		TextField usernameInput = new TextField();
+		usernameInput.setId("UsernameInput");
+		grid.add(usernameInput, 0, 2);
 
 		Text passwordText = new Text("Password");
 		grid.add(passwordText, 0, 3, 2, 1);
 
-		TextField passwordInput = new TextField("Password");
-		grid.setId("Password");
+		// Use TextField for clear password, PasswordField to hide password
+		TextField passwordInput = new PasswordField();
+		passwordInput.setId("PasswordInput");
 		grid.add(passwordInput, 0, 4);
 
-		Button signIn = new Button("Log in");
-		signIn.setId("LoginButton");
-		signIn.setOnAction(e -> {
-			String s;
-			if (signIn.getText().equals("Log in")) {
-				s = "Sign in";
+		Text outputMsg = new Text("");
+		outputMsg.setId("Output");
+		grid.add(outputMsg, 0, 5, 2, 1);
+
+		Button login = new Button("Log in");
+		login.setId("LoginButton");
+		login.setOnAction(e -> {
+			if (signInMode.getText().equals("Log in")) {
+				boolean goodInput = loginUsernameAndPassword(
+						usernameInput.getText(), passwordInput.getText());
+				if (goodInput) {
+					outputMsg.setText("Success!");
+				} else {
+					outputMsg.setText("Username or password incorrect");
+				}
 			} else {
-				s = "Log in";
+				signInMode.setText("Log in");
 			}
-			signInMode.setText(s);
-			signIn.setText(s);
+
 		});
-		grid.add(signIn, 0, 5);
+		grid.add(login, 0, 6);
+
+		Button signIn = new Button("Sign up");
+		signIn.setId("SignupButton");
+		signIn.setOnAction(e -> {
+			if (signInMode.getText().equals("Sign up")) {
+				boolean goodInput = signupUsernameAndPassword(
+						usernameInput.getText(), passwordInput.getText());
+				if (goodInput) {
+					outputMsg.setText("Sign up success!");
+					// Proceed to login?
+				} else {
+					outputMsg.setText("Username already taken");
+				}
+			} else {
+				signInMode.setText("Sign up");
+			}
+
+		});
+		grid.add(signIn, 1, 6);
 
 		return grid;
 	}
@@ -105,7 +134,6 @@ public class StartScreen {
 			String password) {
 
 		String hashUsername = calculateUsernameHash(username);
-
 		if (checkForDuplicate(hashUsername))
 			return false;
 

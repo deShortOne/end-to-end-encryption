@@ -19,6 +19,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -26,6 +27,13 @@ import javafx.stage.Stage;
 public class StartScreenTest {
 
 	private Parent nodeToScene;
+
+	private Text signinLoginTitle = null;
+	private Button login = null;
+	private Button signup = null;
+	private Text outputMsg = null;
+	private TextField usernameInput = null;
+	private TextField passwordInput = null;
 
 	@Start
 	public void start(Stage stage) {
@@ -36,42 +44,62 @@ public class StartScreenTest {
 	}
 
 	@Test
-	public void buttonsAreCorrectAndSwitching(FxRobot robot) {
-		Text signInText = null;
-		Button signIn = null;
+	public void buttonsAreCorrectAndLoggingInSigningIn(FxRobot robot)
+			throws IOException, InterruptedException {
 
-		for (Node p : nodeToScene.getChildrenUnmodifiable()) {
-			if (p.getId() == null)
-				continue;
+		setVariousNodes();
 
-			if (p.getId().equals("LoginButton")) {
-				signIn = (Button) p;
-			} else if (p.getId().equals("SignInModeText")) {
-				signInText = (Text) p;
-			}
-		}
-		Assertions.assertNotEquals(null, signInText);
-		Assertions.assertNotEquals(null, signIn);
+		// Switching text
+		robot.clickOn(signup);
+		Assertions.assertEquals("Sign up", signinLoginTitle.getText());
 
-		Assertions.assertEquals("Log in", signInText.getText());
-		Assertions.assertEquals("Log in", signIn.getText());
+		robot.clickOn(login);
+		Assertions.assertEquals("Log in", signinLoginTitle.getText());
 
-		robot.clickOn(signIn);
-		Assertions.assertEquals("Sign in", signInText.getText());
-		Assertions.assertEquals("Sign in", signIn.getText());
+		/*
+		 * Below is basically same as checkUsernameAndPassword test but now
+		 * being inputed to the window.
+		 */
+		resetAccountsCSV();
 
-		robot.clickOn(signIn);
-		Assertions.assertEquals("Log in", signInText.getText());
-		Assertions.assertEquals("Log in", signIn.getText());
+		String username = "hidden_User1";
+		String password = "lowbattery";
+
+		robot.doubleClickOn(usernameInput);
+		robot.write(username);
+		robot.doubleClickOn(passwordInput);
+		robot.write(password);
+
+		// No user with this username exist so login fails
+		robot.clickOn(login);
+		Assertions.assertEquals("Username or password incorrect",
+				outputMsg.getText());
+
+		// No user with this username exists so sign up succeeds
+		robot.doubleClickOn(signup);
+		Assertions.assertEquals("Sign up success!", outputMsg.getText());
+
+		// Username with correct password so log in succeeds
+		robot.doubleClickOn(login);
+		Assertions.assertEquals("Success!", outputMsg.getText());
+
+		// Already exists username with this username so sign up fails
+		robot.doubleClickOn(signup);
+		Assertions.assertEquals("Username already taken", outputMsg.getText());
+
+		// Username with incorrect password so login fails
+		
+		robot.doubleClickOn(passwordInput);
+		robot.write("asdf");
+		robot.doubleClickOn(login);
+		Assertions.assertEquals("Username or password incorrect",
+				outputMsg.getText());
 	}
 
-	@Test
+	// @Test
 	public void checkUsernameAndPassword() throws IOException {
-		// Clears csv file
-		String csv = StartScreen.fileLoc;
-		CSVWriter writer = new CSVWriter(new FileWriter(csv));
-		writer.writeNext(null);
-		writer.close();
+
+		resetAccountsCSV();
 
 		String username = "hiddenUser1";
 		String password = "lowbattery";
@@ -92,5 +120,42 @@ public class StartScreenTest {
 		// Already exists username with this username so sign up fails
 		Assertions.assertFalse(
 				StartScreen.signupUsernameAndPassword(username, password));
+	}
+
+	private void setVariousNodes() {
+		for (Node p : nodeToScene.getChildrenUnmodifiable()) {
+			if (p.getId() == null)
+				continue;
+
+			switch (p.getId()) {
+			case "LoginButton" -> login = (Button) p;
+			case "SignupButton" -> signup = (Button) p;
+			case "SignInModeText" -> signinLoginTitle = (Text) p;
+			case "Output" -> outputMsg = (Text) p;
+			case "UsernameInput" -> usernameInput = (TextField) p;
+			case "PasswordInput" -> passwordInput = (TextField) p;
+			}
+
+		}
+
+		Assertions.assertNotNull(signinLoginTitle);
+		Assertions.assertNotNull(login);
+		Assertions.assertNotNull(signup);
+		Assertions.assertNotNull(outputMsg);
+		Assertions.assertNotNull(usernameInput);
+		Assertions.assertNotNull(passwordInput);
+
+		Assertions.assertEquals("Log in", signinLoginTitle.getText());
+		Assertions.assertEquals("Log in", login.getText());
+		Assertions.assertEquals("Sign up", signup.getText());
+		Assertions.assertEquals("", outputMsg.getText());
+	}
+
+	private void resetAccountsCSV() throws IOException {
+		// Clears csv file
+		String csv = StartScreen.fileLoc;
+		CSVWriter writer = new CSVWriter(new FileWriter(csv));
+		writer.writeNext(null);
+		writer.close();
 	}
 }
