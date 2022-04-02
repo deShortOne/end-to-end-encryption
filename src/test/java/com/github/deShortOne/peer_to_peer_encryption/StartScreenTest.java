@@ -1,7 +1,10 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,9 +44,43 @@ public class StartScreenTest {
 		Scene s = new Scene(nodeToScene);
 		stage.setScene(s);
 		stage.show();
+
+		try {
+			resetAccountsCSV();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
 	}
 
+	// Checks if file is created
 	@Test
+	public void checkIfFileCreated(FxRobot robot) throws IOException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
+
+		String username = "hidden_User1";
+		String password = "lowbattery";
+		
+		File pubFile = new File(RSAEncryption.publicKeyFileLoc + username + ".pubkey");
+		File priFile = new File(RSAEncryption.publicKeyFileLoc+ username + ".prikey");
+		pubFile.delete();
+		priFile.delete();
+		Assertions.assertFalse(pubFile.isFile());
+		Assertions.assertFalse(priFile.isFile());
+		
+		setVariousNodes();
+		resetAccountsCSV();
+
+		robot.doubleClickOn(usernameInput).write(username);
+		robot.doubleClickOn(passwordInput).write(password);
+
+		robot.clickOn(signup);
+		
+		Assertions.assertTrue(pubFile.isFile());
+		Assertions.assertTrue(priFile.isFile());
+	}
+
+	// @Test
 	public void buttonsAreCorrectAndLoggingInSigningIn(FxRobot robot)
 			throws IOException, InterruptedException {
 
@@ -67,7 +104,7 @@ public class StartScreenTest {
 
 		robot.doubleClickOn(usernameInput).write(username);
 		robot.doubleClickOn(passwordInput).write(password);
-		
+
 		// No user with this username exist so login fails
 		robot.clickOn(login);
 		Assertions.assertEquals("Username or password incorrect",
@@ -86,16 +123,17 @@ public class StartScreenTest {
 		Assertions.assertEquals("Username already taken", outputMsg.getText());
 
 		// Username with incorrect password so login fails
-		
+
 		robot.doubleClickOn(passwordInput).write("asdf").clickOn(login);
 		Assertions.assertEquals("Username or password incorrect",
 				outputMsg.getText());
 	}
 
 	// @Test
-	public void checkUsernameAndPassword() throws IOException {
+	public void checkUsernameAndPassword() throws IOException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 
-		resetAccountsCSV();
+		// resetAccountsCSV();
 
 		String username = "hiddenUser1";
 		String password = "lowbattery";

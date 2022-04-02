@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
@@ -29,6 +30,9 @@ import javafx.scene.text.Text;
 public class StartScreen {
 
 	public static String fileLoc = "files\\accounts.csv";
+
+	// should be non-static?
+	private static RSAEncryption rsaEncryption;
 
 	public static Parent loginPage() {
 		GridPane grid = new GridPane();
@@ -69,7 +73,16 @@ public class StartScreen {
 			boolean goodInput = loginUsernameAndPassword(
 					usernameInput.getText(), passwordInput.getText());
 			if (goodInput) {
-				outputMsg.setText("Success!");
+				try {
+					rsaEncryption = new RSAEncryption(usernameInput.getText(),
+							passwordInput.getText(), false);
+					outputMsg.setText("Success!");
+
+				} catch (NoSuchAlgorithmException | InvalidKeySpecException
+						| IOException e1) {
+					e1.printStackTrace();
+					outputMsg.setText("RSA Encryption error!");
+				}
 			} else {
 				outputMsg.setText("Username or password incorrect");
 			}
@@ -84,12 +97,22 @@ public class StartScreen {
 				signInMode.setText("Sign up");
 				outputMsg.setText("");
 			}
-			boolean goodInput = signupUsernameAndPassword(
-					usernameInput.getText(), passwordInput.getText());
-			if (goodInput) {
-				outputMsg.setText("Sign up success!");
-			} else {
-				outputMsg.setText("Username already taken");
+
+			try {
+				boolean goodInput = signupUsernameAndPassword(
+						usernameInput.getText(), passwordInput.getText());
+
+				if (goodInput) {
+					rsaEncryption = new RSAEncryption(usernameInput.getText(),
+							passwordInput.getText(), true);
+					outputMsg.setText("Sign up success!");
+				} else {
+					outputMsg.setText("Username already taken");
+				}
+			} catch (NoSuchAlgorithmException | InvalidKeySpecException
+					| IOException e1) {
+				e1.printStackTrace();
+				outputMsg.setText("Critical error");
 			}
 		});
 		grid.add(signIn, 1, 6);
@@ -97,8 +120,7 @@ public class StartScreen {
 		return grid;
 	}
 
-	public static boolean loginUsernameAndPassword(String username,
-			String password) {
+	public static boolean loginUsernameAndPassword(String username, String password) {
 
 		String hashPassword = calculatePasswordHash(username, password);
 		if (hashPassword == null)
@@ -127,8 +149,9 @@ public class StartScreen {
 		return false;
 	}
 
-	public static boolean signupUsernameAndPassword(String username,
-			String password) {
+	public static boolean signupUsernameAndPassword(String username, String password)
+			throws NoSuchAlgorithmException, FileNotFoundException,
+			InvalidKeySpecException, IOException {
 
 		String hashUsername = calculateUsernameHash(username);
 		if (checkForDuplicate(hashUsername))
