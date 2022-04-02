@@ -40,6 +40,7 @@ public class AESEncryption {
 
 	/**
 	 * String encryption.
+	 * 
 	 * @param algorithm
 	 * @param input
 	 * @param key
@@ -52,7 +53,7 @@ public class AESEncryption {
 	 * @throws BadPaddingException
 	 * @throws IllegalBlockSizeException
 	 */
-	public static String encrypt(String algorithm, String input, SecretKey key,
+	public static byte[] encrypt(String algorithm, String input, SecretKey key,
 			IvParameterSpec iv)
 			throws NoSuchPaddingException, NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, InvalidKeyException,
@@ -61,11 +62,12 @@ public class AESEncryption {
 		Cipher cipher = Cipher.getInstance(algorithm);
 		cipher.init(Cipher.ENCRYPT_MODE, key, iv);
 		byte[] cipherText = cipher.doFinal(input.getBytes());
-		return Base64.getEncoder().encodeToString(cipherText);
+		return cipherText;
 	}
 
-	/** 
+	/**
 	 * String decryption.
+	 * 
 	 * @param algorithm
 	 * @param cipherText
 	 * @param key
@@ -78,7 +80,7 @@ public class AESEncryption {
 	 * @throws BadPaddingException
 	 * @throws IllegalBlockSizeException
 	 */
-	public static String decrypt(String algorithm, String cipherText,
+	public static String decrypt(String algorithm, byte[] cipherText,
 			SecretKey key, IvParameterSpec iv)
 			throws NoSuchPaddingException, NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, InvalidKeyException,
@@ -86,61 +88,64 @@ public class AESEncryption {
 
 		Cipher cipher = Cipher.getInstance(algorithm);
 		cipher.init(Cipher.DECRYPT_MODE, key, iv);
-		byte[] plainText = cipher
-				.doFinal(Base64.getDecoder().decode(cipherText));
+		byte[] plainText = cipher.doFinal(cipherText);
 		return new String(plainText);
 	}
-	
+
 	// encryption and decryption of file is basically the same
-	public static void encryptFile(String algorithm, SecretKey key, IvParameterSpec iv,
-		    File inputFile, File outputFile) throws IOException, NoSuchPaddingException,
-		    NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
-		    BadPaddingException, IllegalBlockSizeException {
-		    
-		    Cipher cipher = Cipher.getInstance(algorithm);
-		    cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-		    FileInputStream inputStream = new FileInputStream(inputFile);
-		    FileOutputStream outputStream = new FileOutputStream(outputFile);
-		    byte[] buffer = new byte[64];
-		    int bytesRead;
-		    while ((bytesRead = inputStream.read(buffer)) != -1) {
-		        byte[] output = cipher.update(buffer, 0, bytesRead);
-		        if (output != null) {
-		            outputStream.write(output);
-		        }
-		    }
-		    byte[] outputBytes = cipher.doFinal();
-		    if (outputBytes != null) {
-		        outputStream.write(outputBytes);
-		    }
-		    inputStream.close();
-		    outputStream.close();
+	public static void encryptFile(String algorithm, SecretKey key,
+			IvParameterSpec iv, File inputFile, File outputFile)
+			throws IOException, NoSuchPaddingException,
+			NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+			InvalidKeyException, BadPaddingException,
+			IllegalBlockSizeException {
+
+		Cipher cipher = Cipher.getInstance(algorithm);
+		cipher.init(Cipher.ENCRYPT_MODE, key, iv);
+		FileInputStream inputStream = new FileInputStream(inputFile);
+		FileOutputStream outputStream = new FileOutputStream(outputFile);
+		byte[] buffer = new byte[64];
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			byte[] output = cipher.update(buffer, 0, bytesRead);
+			if (output != null) {
+				outputStream.write(output);
+			}
 		}
-	
-	public static void decryptFile(String algorithm, SecretKey key, IvParameterSpec iv,
-		    File inputFile, File outputFile) throws IOException, NoSuchPaddingException,
-		    NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
-		    BadPaddingException, IllegalBlockSizeException {
-		    
-		    Cipher cipher = Cipher.getInstance(algorithm);
-		    cipher.init(Cipher.DECRYPT_MODE, key, iv);
-		    FileInputStream inputStream = new FileInputStream(inputFile);
-		    FileOutputStream outputStream = new FileOutputStream(outputFile);
-		    byte[] buffer = new byte[64];
-		    int bytesRead;
-		    while ((bytesRead = inputStream.read(buffer)) != -1) {
-		        byte[] output = cipher.update(buffer, 0, bytesRead);
-		        if (output != null) {
-		            outputStream.write(output);
-		        }
-		    }
-		    byte[] outputBytes = cipher.doFinal();
-		    if (outputBytes != null) {
-		        outputStream.write(outputBytes);
-		    }
-		    inputStream.close();
-		    outputStream.close();
+		byte[] outputBytes = cipher.doFinal();
+		if (outputBytes != null) {
+			outputStream.write(outputBytes);
 		}
+		inputStream.close();
+		outputStream.close();
+	}
+
+	public static void decryptFile(String algorithm, SecretKey key,
+			IvParameterSpec iv, File inputFile, File outputFile)
+			throws IOException, NoSuchPaddingException,
+			NoSuchAlgorithmException, InvalidAlgorithmParameterException,
+			InvalidKeyException, BadPaddingException,
+			IllegalBlockSizeException {
+
+		Cipher cipher = Cipher.getInstance(algorithm);
+		cipher.init(Cipher.DECRYPT_MODE, key, iv);
+		FileInputStream inputStream = new FileInputStream(inputFile);
+		FileOutputStream outputStream = new FileOutputStream(outputFile);
+		byte[] buffer = new byte[64];
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			byte[] output = cipher.update(buffer, 0, bytesRead);
+			if (output != null) {
+				outputStream.write(output);
+			}
+		}
+		byte[] outputBytes = cipher.doFinal();
+		if (outputBytes != null) {
+			outputStream.write(outputBytes);
+		}
+		inputStream.close();
+		outputStream.close();
+	}
 
 	// https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/crypto/KeyGenerator.html
 	// n is 128, 192 or 256 for AES

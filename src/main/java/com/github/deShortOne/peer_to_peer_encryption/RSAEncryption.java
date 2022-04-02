@@ -38,9 +38,14 @@ public class RSAEncryption {
 
 	private String password;
 
+	/*
+	 * Should throw all to simplify matters a little
+	 */
 	public RSAEncryption(String username, String password, boolean newKeys)
 			throws NoSuchAlgorithmException, FileNotFoundException,
-			InvalidKeySpecException, IOException, NoSuchAlgorithmException {
+			InvalidKeySpecException, IOException, InvalidKeyException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException {
 		this.username = username;
 		this.password = password;
 		if (newKeys)
@@ -89,27 +94,27 @@ public class RSAEncryption {
 
 		return out;
 	}
-	
+
 	public void getKeys() throws IOException, InvalidKeySpecException,
 			NoSuchAlgorithmException {
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-		
+
 		File publicKeyFile = new File(publicKeyFileLoc + username + ".pubkey");
 		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
 
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 		publicKey = keyFactory.generatePublic(publicKeySpec);
-		
-		
+
 		File privateKeyFile = new File(publicKeyFileLoc + username + ".prikey");
 		byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
 
-		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
+				privateKeyBytes);
 		privateKey = keyFactory.generatePrivate(privateKeySpec);
 	}
 
-	public void getPublicKey() throws IOException, NoSuchAlgorithmException,
-			InvalidKeySpecException {
+	public void getPublicKeyFromFile() throws IOException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		File publicKeyFile = new File(publicKeyFileLoc + "public.key");
 		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
 
@@ -121,27 +126,41 @@ public class RSAEncryption {
 	public String encrypt(String clearText) throws InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
+		return Base64.getEncoder()
+				.encodeToString(encrypt(clearText, publicKey));
+	}
+
+	public static byte[] encrypt(String clearText, PublicKey key)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException {
 		Cipher encryptCipher = Cipher.getInstance("RSA");
-		encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
+		encryptCipher.init(Cipher.ENCRYPT_MODE, key);
 
 		byte[] secretMessageBytes = clearText.getBytes(StandardCharsets.UTF_8);
 		byte[] encryptedMessageBytes = encryptCipher
 				.doFinal(secretMessageBytes);
-
-		String encodedMessage = Base64.getEncoder()
-				.encodeToString(encryptedMessageBytes);
-		return encodedMessage;
+		return encryptedMessageBytes;
 	}
 
 	public String decrypt(String cipherText) throws InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
-		Cipher decryptCipher = Cipher.getInstance("RSA");
-		decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
 
-		byte[] secretMessageBytes = cipherText.getBytes(StandardCharsets.UTF_8);
-		byte[] decryptedMessageBytes = decryptCipher
-				.doFinal(Base64.getDecoder().decode(secretMessageBytes));
+		return decrypt(
+				Base64.getDecoder()
+						.decode(cipherText.getBytes(StandardCharsets.UTF_8)),
+				privateKey);
+	}
+
+	public static String decrypt(byte[] cipher, PrivateKey key)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException {
+		Cipher decryptCipher = Cipher.getInstance("RSA");
+		decryptCipher.init(Cipher.DECRYPT_MODE, key);
+
+		byte[] decryptedMessageBytes = decryptCipher.doFinal(cipher);
 		String decryptedMessage = new String(decryptedMessageBytes,
 				StandardCharsets.UTF_8);
 		return decryptedMessage;
@@ -190,17 +209,18 @@ public class RSAEncryption {
 	}
 
 	/**
-	 * Modulus and exponent.
+	 * DEBUG. Shouldn't normally call a method that isn't usually called in the
+	 * normal use of the application
 	 * 
-	 * @param key
 	 * @return
 	 */
-	private int[] getExpAndMod(Key key) {
-		int[] out = new int[2];
-		String[] a = publicKey.toString().split("\n");
-		out[0] = Integer.valueOf(a[2].split(": ")[1]);
-		out[1] = Integer.valueOf(a[3].split(": ")[1]);
+	@Deprecated
+	public PublicKey getPublicKey() {
+		return publicKey;
+	}
 
-		return out;
+	@Deprecated
+	public PrivateKey getPrivateKey() {
+		return privateKey;
 	}
 }

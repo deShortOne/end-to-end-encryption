@@ -80,7 +80,7 @@ public class StartScreenTest {
 		Assertions.assertTrue(priFile.isFile());
 	}
 
-	// @Test
+	@Test
 	public void buttonsAreCorrectAndLoggingInSigningIn(FxRobot robot)
 			throws IOException, InterruptedException {
 
@@ -129,7 +129,7 @@ public class StartScreenTest {
 				outputMsg.getText());
 	}
 
-	// @Test
+	@Test
 	public void checkUsernameAndPassword() throws IOException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 

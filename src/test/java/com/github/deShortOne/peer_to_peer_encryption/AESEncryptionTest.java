@@ -31,7 +31,7 @@ public class AESEncryptionTest {
 		SecretKey key = AESEncryption.generateKey(128);
 		IvParameterSpec ivParameterSpec = AESEncryption.generateIv();
 		String algorithm = "AES/CBC/PKCS5Padding";
-		String cipherText = AESEncryption.encrypt(algorithm, input, key,
+		byte[] cipherText = AESEncryption.encrypt(algorithm, input, key,
 				ivParameterSpec);
 		String plainText = AESEncryption.decrypt(algorithm, cipherText, key,
 				ivParameterSpec);
@@ -69,7 +69,7 @@ public class AESEncryptionTest {
 		String salt = "12345678";
 		IvParameterSpec ivParameterSpec = AESEncryption.generateIv();
 		SecretKey key = AESEncryption.getKeyFromPassword(password, salt);
-		String cipherText = AESEncryption.encrypt(algorithm, plainText, key,
+		byte[] cipherText = AESEncryption.encrypt(algorithm, plainText, key,
 				ivParameterSpec);
 		String decryptedCipherText = AESEncryption.decrypt(algorithm,
 				cipherText, key, ivParameterSpec);
