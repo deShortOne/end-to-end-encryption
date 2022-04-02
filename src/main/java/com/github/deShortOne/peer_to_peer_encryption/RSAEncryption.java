@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -15,6 +16,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
@@ -32,13 +34,24 @@ public class RSAEncryption {
 
 	private PrivateKey privateKey;
 
-	public RSAEncryption() throws NoSuchAlgorithmException,
-			FileNotFoundException, InvalidKeySpecException, IOException {
-		generateKeys();
+	private String username;
+
+	private String password;
+
+	public RSAEncryption(String username, String password, boolean newKeys)
+			throws NoSuchAlgorithmException, FileNotFoundException,
+			InvalidKeySpecException, IOException, NoSuchAlgorithmException {
+		this.username = username;
+		this.password = password;
+		if (newKeys)
+			generateKeys();
+		else {
+			getKeys();
+		}
 	}
 
 	/**
-	 * Generate public prinvate keys and store in file.
+	 * Generate public private keys and store in file.
 	 * 
 	 * @throws NoSuchAlgorithmException
 	 * @throws FileNotFoundException
@@ -54,9 +67,45 @@ public class RSAEncryption {
 		publicKey = pair.getPublic();
 
 		try (FileOutputStream fos = new FileOutputStream(
-				publicKeyFileLoc + "public.key")) {
+				publicKeyFileLoc + username + ".pubkey")) {
 			fos.write(publicKey.getEncoded());
 		}
+
+		// FIXME be encrypted with users password
+		try (FileOutputStream fos = new FileOutputStream(
+				publicKeyFileLoc + username + ".prikey")) {
+			fos.write(privateKey.getEncoded());
+		}
+	}
+
+	/**
+	 * 
+	 * FIXME: private key needs to be encrypted somehow
+	 * 
+	 * @return
+	 */
+	public String[] getPublicKeys() {
+		String[] out = new String[2];
+
+		return out;
+	}
+	
+	public void getKeys() throws IOException, InvalidKeySpecException,
+			NoSuchAlgorithmException {
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+		
+		File publicKeyFile = new File(publicKeyFileLoc + username + ".pubkey");
+		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+
+		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+		publicKey = keyFactory.generatePublic(publicKeySpec);
+		
+		
+		File privateKeyFile = new File(publicKeyFileLoc + username + ".prikey");
+		byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+
+		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+		privateKey = keyFactory.generatePrivate(privateKeySpec);
 	}
 
 	public void getPublicKey() throws IOException, NoSuchAlgorithmException,
@@ -66,7 +115,7 @@ public class RSAEncryption {
 
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-		keyFactory.generatePublic(publicKeySpec);
+		publicKey = keyFactory.generatePublic(publicKeySpec);
 	}
 
 	public String encrypt(String clearText) throws InvalidKeyException,
@@ -131,12 +180,27 @@ public class RSAEncryption {
 			IllegalBlockSizeException, BadPaddingException {
 		byte[] encryptedFileBytes = Files.readAllBytes(input.toPath());
 		Cipher decryptCipher = Cipher.getInstance("RSA");
-		
+
 		decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
 		byte[] decryptedFileBytes = decryptCipher.doFinal(encryptedFileBytes);
-		
+
 		try (FileOutputStream stream = new FileOutputStream(output)) {
 			stream.write(decryptedFileBytes);
 		}
+	}
+
+	/**
+	 * Modulus and exponent.
+	 * 
+	 * @param key
+	 * @return
+	 */
+	private int[] getExpAndMod(Key key) {
+		int[] out = new int[2];
+		String[] a = publicKey.toString().split("\n");
+		out[0] = Integer.valueOf(a[2].split(": ")[1]);
+		out[1] = Integer.valueOf(a[3].split(": ")[1]);
+
+		return out;
 	}
 }

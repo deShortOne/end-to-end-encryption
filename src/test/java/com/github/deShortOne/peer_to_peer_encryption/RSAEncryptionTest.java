@@ -18,12 +18,12 @@ import org.junit.jupiter.api.Test;
 
 public class RSAEncryptionTest {
 
-	@Test
+	// @Test
 	public void testEncryption_OneUser() throws NoSuchAlgorithmException,
 			FileNotFoundException, InvalidKeySpecException, IOException,
 			InvalidKeyException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
-		RSAEncryption p1 = new RSAEncryption();
+		RSAEncryption p1 = new RSAEncryption("", "", true);
 
 		String msg = "WeatherIsMostlysUNNY";
 		String cipher = p1.encrypt(msg);
@@ -32,12 +32,12 @@ public class RSAEncryptionTest {
 		Assertions.assertEquals(msg, msg2);
 	}
 
-	@Test
+	// @Test
 	public void testEncryption_OneUser_File() throws NoSuchAlgorithmException,
 			FileNotFoundException, InvalidKeySpecException, IOException,
 			InvalidKeyException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
-		RSAEncryption p1 = new RSAEncryption();
+		RSAEncryption p1 = new RSAEncryption("", "", true);
 
 		String fileLocation = "dummy_files/";
 
@@ -47,7 +47,26 @@ public class RSAEncryptionTest {
 
 		p1.encryptFile(inputFile, encryptedFile);
 		p1.decryptFile(encryptedFile, decryptedFile);
-		
+
 		assertThat(inputFile).hasSameTextualContentAs(decryptedFile);
+	}
+
+	@Test
+	public void testStoringPublicPrivateKey() throws NoSuchAlgorithmException,
+			FileNotFoundException, InvalidKeySpecException, IOException,
+			InvalidKeyException, NoSuchPaddingException,
+			IllegalBlockSizeException, BadPaddingException {
+		RSAEncryption p1 = new RSAEncryption("Test", "Test", true);
+
+		String msg = "WeatherIsMostlysUNNY";
+		String cipher = p1.encrypt(msg);
+		
+		RSAEncryption p2 = new RSAEncryption("Test", "Test", false);
+		String msg2 = p2.decrypt(cipher);
+		
+		Assertions.assertEquals(msg, msg2);
+		
+		Assertions.assertTrue(new File("public_keys\\Test.pubkey").isFile());
+		Assertions.assertTrue(new File("public_keys\\Test.prikey").isFile());
 	}
 }
