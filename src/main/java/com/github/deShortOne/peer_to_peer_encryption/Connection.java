@@ -11,37 +11,44 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.util.Scanner;
 
 public class Connection {
 
 	Socket socket;
 	ServerSocket server;
 	int port = 8080;
+	OutputStream output;
+	
+	MessagePage mp;
 	
 	/**
 	 * Server port number. Only specific server.
 	 * @param port
 	 * @throws IOException
+	 * end
 	 */
-	public Connection(int port) throws IOException {
+	public Connection(int port, MessagePage mp) throws IOException {
 		server = new ServerSocket(port);
 		socket = server.accept();
+		this.mp = mp;
 		System.out.println("I'm a server");
 		
 		// testServer();
+		setup();
 	}
 	
 	// Client
-	public Connection(InetAddress toAddress) throws IOException {
-		this(toAddress, 8080);
+	public Connection(InetAddress toAddress, MessagePage mp) throws IOException {
+		this(toAddress, 8080, mp);
 	}
 	
-	// Client
-	public Connection(InetAddress toAddress, int port) throws IOException {
+	// Client - end
+	public Connection(InetAddress toAddress, int port, MessagePage mp) throws IOException {
 		socket = new Socket(toAddress, port);
+		this.mp = mp;
 		System.out.println("I'm the client");
-		
+		setup();
 		// testClient();
 	}
 	
@@ -49,7 +56,7 @@ public class Connection {
 	 * Attempts to create server 
 	 * @throws IOException
 	 */
-	public Connection() throws IOException {
+	public Connection(MessagePage mp) throws IOException {
 		try {
 			server = new ServerSocket(port);
 			socket = server.accept();
@@ -58,7 +65,8 @@ public class Connection {
 			socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
 			System.out.println("I'm the client");
 		}
-		
+		this.mp = mp;
+		setup();
 //		if (isServer()) {
 //			testServer();
 //		} else {
@@ -66,26 +74,40 @@ public class Connection {
 //		}
 	}
 	
-	public boolean sendTo(String hostname, int port) {
-	    boolean sent = false;
-
-	    try {
-	        Socket socket = createSocket();
-	        OutputStream out = socket.getOutputStream();
-	        out.write(new byte[1001]);
-	        socket.close();
-	        sent = true;
-	    } catch (UnknownHostException e) {
-	        // TODO
-	    } catch (IOException e) {
-	        // TODO
-	    }
-
-	    return sent;
+	public void setup() {
+		setUpReciever();
+		setUpSender();
 	}
-
-	protected Socket createSocket() throws IOException {
-	    return new Socket(InetAddress.getLoopbackAddress(), 8080);
+	
+	private void setUpReciever() {
+		ConnectionRecieve rm = new ConnectionRecieve(socket, mp);
+		Thread t = new Thread(rm);
+		t.start();
+	}
+	
+	private void setUpSender() {
+//		try (Scanner in = new Scanner(System.in)) {
+//			while (true) {
+//				sendMessage(in.nextLine());
+//			}
+//		} catch (IOException e) {
+//			System.err.println("Connection lost");
+//		}
+		try {
+			output = socket.getOutputStream();
+		} catch (IOException e1) {
+			System.err.println("Cannot connect");
+			return;
+		}
+	}
+	
+	public void sendMessage(String msg) throws IOException {
+		sendMessage(msg.getBytes());
+	}
+	
+	public void sendMessage(byte[] msg) throws IOException {
+		output.write(msg);
+		output.write("\n".getBytes());
 	}
 	
 	private boolean isServer() {
