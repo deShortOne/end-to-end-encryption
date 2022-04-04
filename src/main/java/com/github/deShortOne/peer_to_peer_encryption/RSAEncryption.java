@@ -214,7 +214,6 @@ public class RSAEncryption {
 	 * 
 	 * @return
 	 */
-	@Deprecated
 	public PublicKey getPublicKey() {
 		return publicKey;
 	}

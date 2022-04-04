@@ -25,8 +25,8 @@ public class CryptMessageTest {
 
 	HashMap<String, PublicKey> friendsList = new HashMap<>();
 
-	@Test
-	public void sendMessage()
+	//@Test
+	public void sendMessage_onePerson()
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalBlockSizeException,
 			BadPaddingException, FileNotFoundException, InvalidKeySpecException,
@@ -41,6 +41,21 @@ public class CryptMessageTest {
 				sentMessage[1], friend1.getPrivateKey());
 
 		Assertions.assertEquals(msg, recievedMessage);
+	}
+	
+	@Test
+	public void makeFriends()
+			throws InvalidKeyException, NoSuchAlgorithmException, FileNotFoundException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
+		// Create new RSA
+		RSAEncryption per1 = new RSAEncryption("per1", "AA", true); 
+		RSAEncryption per2 = new RSAEncryption("per2", "BB", true);
+		
+		// Load profiles
+		CryptMessage p1 = new CryptMessage(new RSAEncryption("per1", "AA", false));
+		CryptMessage p2 = new CryptMessage(new RSAEncryption("per2", "AA", false));
+		
+		// p1 wants to make friends with p2
+		
 	}
 
 	public void start() throws IOException, NoSuchAlgorithmException,

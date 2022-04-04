@@ -82,7 +82,7 @@ public class StartScreen {
 					rsaEncryption = new RSAEncryption(usernameInput.getText(),
 							passwordInput.getText(), false);
 					outputMsg.setText("Success!");
-
+					moveToNextWindow();
 				} catch (NoSuchAlgorithmException | InvalidKeySpecException
 						| IOException | InvalidKeyException
 						| NoSuchPaddingException | IllegalBlockSizeException
@@ -112,6 +112,7 @@ public class StartScreen {
 				if (goodInput) {
 					rsaEncryption = new RSAEncryption(usernameInput.getText(),
 							passwordInput.getText(), true);
+					moveToNextWindow();
 					outputMsg.setText("Sign up success!");
 				} else {
 					outputMsg.setText("Username already taken");
@@ -126,6 +127,11 @@ public class StartScreen {
 		grid.add(signIn, 1, 6);
 
 		return grid;
+	}
+	
+	public static void moveToNextWindow() {
+		CryptMessage cm = new CryptMessage(rsaEncryption);
+		
 	}
 
 	public static boolean loginUsernameAndPassword(String username,

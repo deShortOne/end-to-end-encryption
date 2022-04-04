@@ -43,35 +43,4 @@ public class ConnectionTest {
 		System.err.print("hello again");
 		assertEquals("hello again", errContent.toString());
 	}
-
-	// @Test
-	public void testConnection() throws IOException {
-		byte[] emptyPayload = new byte[1001];
-
-		final Socket socket = mock(Socket.class);
-
-		final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-		when(socket.getOutputStream()).thenReturn(byteArrayOutputStream);
-
-		Connection text = new Connection() {
-
-			protected Socket createSocket() {
-				return socket;
-			}
-		};
-
-		assertEquals("Message sent successfully",
-				text.sendTo("localhost", 8080));
-		assertEquals("whatever you wanted to send".getBytes(),
-				byteArrayOutputStream.toByteArray());
-
-		// Have tried using mock but testing still fails... Tried this in new
-		// class
-
-//		Connection server = new Connection();
-//		assertEquals("I'm a server", outContent.toString());
-//		
-//		Connection client = new Connection();
-//		assertEquals("I'm the client", outContent.toString());
-	}
 }

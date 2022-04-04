@@ -1,5 +1,7 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -28,15 +30,11 @@ import javafx.scene.text.Text;
 
 public class CryptMessage {
 
+	private String username;
 	private RSAEncryption rsa;
 
 	public CryptMessage(RSAEncryption rsa) {
 		this.rsa = rsa;
-
-	}
-
-	public void joinFriend(String name) {
-
 	}
 
 	public String saveMessage(String clearMessage)
@@ -132,5 +130,60 @@ public class CryptMessage {
 		String clearMsg = AESEncryption.decrypt(algorithm, cipherMessage, key,
 				iv);
 		return clearMsg;
+	}
+	
+	public static byte[][] sendFile(File file, PublicKey pubKey)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException, InvalidAlgorithmParameterException, IOException {
+
+		String algorithm = "AES/CBC/PKCS5Padding";
+
+		SecretKey key = AESEncryption.generateKey(256);
+		IvParameterSpec iv = AESEncryption.generateIv();
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(Base64.getEncoder().encodeToString(key.getEncoded()));
+		sb.append(Base64.getEncoder().encodeToString(iv.getIV()));
+
+		byte[] base = RSAEncryption.encrypt(sb.toString(), pubKey);
+
+		byte[] encryptedFile = AESEncryption.encryptFile(algorithm, key, iv, file);
+
+		return new byte[][] { base, encryptedFile };
+	}
+	
+	/**
+	 * Currently deprecated as is incorrect
+	 */
+	@Deprecated
+	public static String recieveFile(byte[] cipherBase, byte[] cipherFile,
+			PrivateKey priKey)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException, InvalidAlgorithmParameterException {
+
+		String algorithm = "AES/CBC/PKCS5Padding";
+
+		String base = RSAEncryption.decrypt(cipherBase, priKey);
+
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < 44; i++) {
+			sb.append(base.charAt(i));
+		}
+		SecretKey key = new SecretKeySpec(
+				Base64.getDecoder().decode(sb.toString()), 0, 32, "AES");
+
+		sb.setLength(0);
+		for (int i = 44; i < 68; i++) {
+			sb.append(base.charAt(i));
+		}
+		IvParameterSpec iv = new IvParameterSpec(
+				Base64.getDecoder().decode(sb.toString()));
+
+		String clearMsg = AESEncryption.decrypt(algorithm, cipherFile, key,
+				iv);
+		return null;
 	}
 }
