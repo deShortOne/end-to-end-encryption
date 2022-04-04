@@ -31,7 +31,7 @@ public class ConnectionRecieve implements Runnable {
 		while (true) {
 			try {
 				String answer = br.readLine();
-				mp.recieveMessage(answer);
+				mp.recieveMessage("Other person: " + answer);
 			} catch (SocketException e1) {
 				System.err.println("Connection lost");
 				break;

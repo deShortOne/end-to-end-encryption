@@ -1,18 +1,20 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.util.regex.*;
 
 import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -22,13 +24,11 @@ public class MessagePage extends Application {
 
 	private Connection c;
 
-	private TextField box2;
-	
+	private TextField output;
+
 	private TextArea inputoutput;
 
 	private Text outputMsg;
-
-//	private Stage stage;
 
 	public MessagePage() {
 //		try {
@@ -42,8 +42,20 @@ public class MessagePage extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		Scene s = new Scene(setupPage());
+
+		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
+			if (key.getCode() == KeyCode.ENTER) {
+				try {
+					sendMessage();
+				} catch (SocketException e) {
+					outputMsg.setText("Connection lost");
+				} catch (IOException f) {
+					f.printStackTrace();
+				}
+			}
+		});
+
 		primaryStage.setScene(s);
-//		stage = primaryStage;
 		primaryStage.show();
 
 		try {
@@ -51,7 +63,6 @@ public class MessagePage extends Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	public static void main(String[] args) {
@@ -65,7 +76,8 @@ public class MessagePage extends Application {
 	}
 
 	public void recieveMessage(String msg) {
-		inputoutput.appendText(msg);
+//		if (msg.split(": ").length != 1)
+			inputoutput.appendText(msg + "\n");
 	}
 
 	public void setErrorMsg(String msg) {
@@ -74,74 +86,54 @@ public class MessagePage extends Application {
 
 	public Parent messageWindow() {
 		VBox root = new VBox();
-//		root.prefWidthProperty().bind(stage.heightProperty().multiply(0.80));
 
 		outputMsg = new Text();
 		root.getChildren().add(outputMsg);
-		
+
 		// Text interactions
 		inputoutput = new TextArea();
 		inputoutput.setEditable(false);
-		
+		inputoutput.setWrapText(true);
+
 		ScrollPane sp = new ScrollPane(inputoutput);
+		sp.setHbarPolicy(ScrollBarPolicy.NEVER);
+		sp.setVbarPolicy(ScrollBarPolicy.NEVER);
 
 		root.getChildren().add(sp);
-		
-		
-		TextField output = new TextField();
+
+		output = new TextField();
 		output.setId("box1");
-		
+
 		Button b = new Button("Send msg");
 		b.setId("SendMsgButton");
 		b.setOnAction(e -> {
 			try {
-				c.sendMessage(output.getText());
+				sendMessage();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 		});
-		
+
 		HBox sendRow = new HBox();
 		sendRow.getChildren().addAll(output, b);
-		
+
 		root.getChildren().add(sendRow);
 
-		return sp;
+		return root;
 	}
 
-	private Node translationPage() {
-		GridPane grid = new GridPane();
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(0, 10, 0, 10));
-
-		Text encryptText = new Text("Send/ recieve text");
-		grid.add(encryptText, 0, 0);
-
-		TextField box1 = new TextField();
-		box1.setId("box1");
-		grid.add(box1, 0, 1);
-
-		box2 = new TextField();
-		box2.setId("box2");
-		grid.add(box2, 1, 1);
-
-		Button b = new Button("Send msg");
-		b.setId("SendMsgButton");
-		b.setOnAction(e -> {
-			try {
-				c.sendMessage(box1.getText());
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-		});
-		grid.add(b, 0, 2);
-
-		outputMsg = new Text("No connection to client");
-		outputMsg.setId("ErrorMsg");
-
-		grid.add(outputMsg, 0, 3);
-
-		return grid;
+	private void sendMessage() throws IOException {		
+		String msg = output.getText();
+		if (msg == "")
+			return;
+		
+		output.setText("");
+		Pattern pattern = Pattern.compile("\\s+");
+		Matcher matcher = pattern.matcher(msg);
+		
+		if (!matcher.matches()) {
+			c.sendMessage(msg);
+			recieveMessage("You: " + msg);
+		} 
 	}
 }

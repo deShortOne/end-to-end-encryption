@@ -1,17 +1,11 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class Connection {
 
@@ -70,9 +64,10 @@ public class Connection {
 
 	public void setup() {
 		if (isServer()) {
-			Thread t = new Thread() {
+			new Thread() {
 				public void run() {
 					try {
+						mp.setErrorMsg("Not connected to client");
 						socket = server.accept();
 						setUpReciever();
 						setUpSender();
@@ -81,8 +76,7 @@ public class Connection {
 
 					}
 				}
-			};
-			t.start();
+			}.start();
 
 		} else {
 			setUpReciever();
