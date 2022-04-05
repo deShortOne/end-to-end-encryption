@@ -96,7 +96,7 @@ public class Connection {
 			output = socket.getOutputStream();
 			// Should send public key?
 //			String username = mp.getName();
-//			sendMessage();
+			sendMessage(mp.getName());
 			
 		} catch (IOException e1) {
 			System.err.println("Cannot connect");

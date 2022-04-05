@@ -36,10 +36,14 @@ public class MessagePage extends Application {
 	
 	private static Random rand = new Random();
 	
+	private static String[] fakeNames = new String[] {
+			"Alice", "Bob", "Charlie", "Dieago", "Faizan", "Ghozi", 
+			"Holly", "Imogen", "Julia"
+	};
 	/**
 	 * Testing. username of self.
 	 */
-	private String name = String.valueOf(rand.nextInt(10));
+	private String name = fakeNames[rand.nextInt(10)];
 
 	/**
 	 * Testing

@@ -11,6 +11,7 @@ public class ConnectionRecieve implements Runnable {
 
 	Socket socket;
 	MessagePage mp;
+	String nameOfOther;
 
 	public ConnectionRecieve(Socket socket, MessagePage mp) {
 		this.socket = socket;
@@ -28,17 +29,37 @@ public class ConnectionRecieve implements Runnable {
 		}
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(isr);
+		
+		int lengthOfMessage;
+		StringBuilder sb;
+		
+		try {
+			lengthOfMessage = br.read();
+			sb = new StringBuilder();
+			for (; lengthOfMessage > 0; lengthOfMessage--) {
+				sb.append((char) br.read());
+			}
+			// String answer = br.readLine();
+			nameOfOther = sb.toString();
+		}  catch (SocketException e1) {
+			System.err.println("Connection lost");
+			return;
+		} catch (IOException e2) {
+			e2.printStackTrace();
+			return;
+		}
+		
 		while (true) {
 			try {
 				
-				int lengthOfMessage = br.read();
+				lengthOfMessage = br.read();
 				
-				StringBuilder sb = new StringBuilder();
+				sb.setLength(0);
 				for (; lengthOfMessage > 0; lengthOfMessage--) {
 					sb.append((char) br.read());
 				}
 				// String answer = br.readLine();
-				mp.recieveMessage("Other person: " + sb.toString());
+				mp.recieveMessage(nameOfOther + ": " + sb.toString());
 			} catch (SocketException e1) {
 				System.err.println("Connection lost");
 				break;
