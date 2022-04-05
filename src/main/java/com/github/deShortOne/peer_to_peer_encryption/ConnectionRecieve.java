@@ -6,12 +6,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketException;
+import java.security.PublicKey;
 
 public class ConnectionRecieve implements Runnable {
 
-	Socket socket;
-	MessagePage mp;
-	String nameOfOther;
+	private Socket socket;
+	private MessagePage mp;
+	private String nameOfOther;
 
 	public ConnectionRecieve(Socket socket, MessagePage mp) {
 		this.socket = socket;
@@ -29,10 +30,11 @@ public class ConnectionRecieve implements Runnable {
 		}
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(isr);
-		
+
 		try {
 			nameOfOther = getMessage(br);
-		}  catch (SocketException e1) {
+
+		} catch (SocketException e1) {
 			System.err.println("Connection lost");
 			return;
 		} catch (IOException e2) {
@@ -52,24 +54,31 @@ public class ConnectionRecieve implements Runnable {
 		}
 	}
 
+	private PublicKey getPublicKey(BufferedReader br) {
+		
+		return null;
+	}
+
 	private String getMessage(BufferedReader br) throws IOException {
-		int lengthOfMessage;
+		int lengthOfMessage = getMessageLength(br);
+
 		StringBuilder sb = new StringBuilder();
-		
-		lengthOfMessage = br.read();
-		String s = "";
-		if (lengthOfMessage == 0) {
-			while ((lengthOfMessage = br.read()) != 10) {
-				s += String.valueOf(lengthOfMessage);
-			}
-			lengthOfMessage = Integer.valueOf(s);
-		}
-		
-		sb = new StringBuilder();
 		for (; lengthOfMessage > 0; lengthOfMessage--) {
 			sb.append((char) br.read());
 		}
 
 		return sb.toString();
+	}
+
+	private int getMessageLength(BufferedReader br) throws IOException {
+		int lengthOfMessage = br.read();
+		if (lengthOfMessage == 0) {
+			StringBuilder sb = new StringBuilder();
+			while ((lengthOfMessage = br.read()) != 10) {
+				sb.append(lengthOfMessage);
+			}
+			lengthOfMessage = Integer.valueOf(sb.toString());
+		}
+		return lengthOfMessage;
 	}
 }

@@ -6,15 +6,18 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PublicKey;
 
 public class Connection {
 
-	Socket socket;
-	ServerSocket server;
-	int port = 8080;
-	OutputStream output;
+	private Socket socket;
+	private ServerSocket server;
+	private int port = 8080;
+	private OutputStream output;
 
-	MessagePage mp;
+	private MessagePage mp;
+	
+	private PublicKey pubKey;
 
 	/**
 	 * Server port number. Only specific server.
@@ -61,6 +64,10 @@ public class Connection {
 		this.mp = mp;
 		setup();
 	}
+	
+	public void setPublicKey(PublicKey pubKey) {
+		this.pubKey = pubKey;
+	}
 
 	public void setup() {
 		if (isServer()) {
@@ -94,10 +101,9 @@ public class Connection {
 	private void setUpSender() {
 		try {
 			output = socket.getOutputStream();
-			// Should send public key?
-//			String username = mp.getName();
 			sendMessage(mp.getName());
-
+			
+			// sendMessage(mp.getPublicKey());
 		} catch (IOException e1) {
 			System.err.println("Cannot connect");
 			return;
