@@ -30,17 +30,8 @@ public class ConnectionRecieve implements Runnable {
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(isr);
 		
-		int lengthOfMessage;
-		StringBuilder sb;
-		
 		try {
-			lengthOfMessage = br.read();
-			sb = new StringBuilder();
-			for (; lengthOfMessage > 0; lengthOfMessage--) {
-				sb.append((char) br.read());
-			}
-			// String answer = br.readLine();
-			nameOfOther = sb.toString();
+			nameOfOther = getMessage(br);
 		}  catch (SocketException e1) {
 			System.err.println("Connection lost");
 			return;
@@ -48,18 +39,14 @@ public class ConnectionRecieve implements Runnable {
 			e2.printStackTrace();
 			return;
 		}
-		
+		System.out.println("Ready");
 		while (true) {
 			try {
-				
-				lengthOfMessage = br.read();
-				
-				sb.setLength(0);
-				for (; lengthOfMessage > 0; lengthOfMessage--) {
-					sb.append((char) br.read());
-				}
-				// String answer = br.readLine();
-				mp.recieveMessage(nameOfOther + ": " + sb.toString());
+				System.out.println(1);
+				String s = getMessage(br);
+				System.out.println(2);
+				mp.recieveMessage(nameOfOther + ": " + s);
+				System.out.println(3);
 			} catch (SocketException e1) {
 				System.err.println("Connection lost");
 				break;
@@ -70,4 +57,24 @@ public class ConnectionRecieve implements Runnable {
 		}
 	}
 
+	private String getMessage(BufferedReader br) throws IOException {
+		int lengthOfMessage;
+		StringBuilder sb = new StringBuilder();
+		
+		lengthOfMessage = br.read();
+		String s = "";
+		if (lengthOfMessage == 0) {
+			while ((lengthOfMessage = br.read()) != 10) {
+				s += String.valueOf(lengthOfMessage);
+			}
+			lengthOfMessage = Integer.valueOf(s);
+		}
+		
+		sb = new StringBuilder();
+		for (; lengthOfMessage > 0; lengthOfMessage--) {
+			sb.append((char) br.read());
+		}
+
+		return sb.toString();
+	}
 }

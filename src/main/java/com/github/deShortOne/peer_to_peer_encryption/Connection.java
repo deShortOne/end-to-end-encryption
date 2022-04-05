@@ -97,7 +97,7 @@ public class Connection {
 			// Should send public key?
 //			String username = mp.getName();
 			sendMessage(mp.getName());
-			
+
 		} catch (IOException e1) {
 			System.err.println("Cannot connect");
 			return;
@@ -105,15 +105,28 @@ public class Connection {
 	}
 
 	public void sendMessage(String msg) throws IOException {
+		String a20 = "aaaaaaaaaaaaaaaaaaaa";
+		for (int i = 0; i < 10; i++) {
+			msg += a20;
+		}
 		sendMessage(msg.getBytes());
 	}
 
 	public void sendMessage(byte[] msg) throws IOException {
 		if (output != null) {
-			if (msg.length > 127)
-				System.err.println("Not yet implemented!");
-			output.write(msg.length);
-			output.write(msg); //Message
+			if (msg.length > 127) {
+				output.write(0);
+				
+				String len = String.valueOf(msg.length);
+				for (byte i : len.getBytes()) {
+					output.write(i - '0');
+				}
+				
+				output.write(10);
+			} else {
+				output.write(msg.length);
+			}
+			output.write(msg); // Message
 		}
 	}
 

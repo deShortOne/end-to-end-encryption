@@ -2,7 +2,14 @@ package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.regex.*;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import javafx.application.Application;
 import javafx.scene.Parent;
@@ -31,15 +38,14 @@ public class MessagePage extends Application {
 	private TextArea inputoutput;
 
 	private Text outputMsg;
-	
+
 	private CryptMessage cm;
-	
+
 	private static Random rand = new Random();
-	
-	private static String[] fakeNames = new String[] {
-			"Alice", "Bob", "Charlie", "Dieago", "Faizan", "Ghozi", 
-			"Holly", "Imogen", "Julia", "Kieran"
-	};
+
+	private static String[] fakeNames = new String[] { "Alice", "Bob",
+			"Charlie", "Dieago", "Faizan", "Ghozi", "Holly", "Imogen", "Julia",
+			"Kieren" };
 	/**
 	 * Testing. username of self.
 	 */
@@ -56,13 +62,51 @@ public class MessagePage extends Application {
 //			// Invalid Connection
 //		}
 	}
-	
+
 	/**
 	 * Real one.
+	 * 
 	 * @param cm
 	 */
 	public MessagePage(CryptMessage cm) {
 		this.cm = cm;
+	}
+
+	public void setStage(Stage stage) {
+		// should be passed in
+		try {
+			cm = new CryptMessage(new RSAEncryption(name, name, true));
+		} catch (InvalidKeyException | NoSuchAlgorithmException
+				| InvalidKeySpecException | NoSuchPaddingException
+				| IllegalBlockSizeException | BadPaddingException
+				| IOException e1) {
+			e1.printStackTrace();
+		}
+		/**/
+
+		Scene s = new Scene(setupPage());
+
+		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
+			if (key.getCode() == KeyCode.ENTER) {
+				try {
+					sendMessage();
+				} catch (SocketException e) {
+					outputMsg.setText("Connection lost");
+				} catch (IOException f) {
+					f.printStackTrace();
+				}
+			}
+		});
+
+		stage.setScene(s);
+		stage.show();
+		stage.setTitle(name);
+
+		try {
+			c = new Connection(this);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -70,7 +114,7 @@ public class MessagePage extends Application {
 		// should be passed in
 		cm = new CryptMessage(new RSAEncryption(name, name, true));
 		/**/
-		
+
 		Scene s = new Scene(setupPage());
 
 		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
@@ -108,17 +152,17 @@ public class MessagePage extends Application {
 
 	public void recieveMessage(String msg) {
 //		if (msg.split(": ").length != 1)
-			inputoutput.appendText(msg + "\n");
+		inputoutput.appendText(msg + "\n");
 	}
 
 	public void setErrorMsg(String msg) {
 		outputMsg.setText(msg);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public byte[] getPublicKey() {
 		return cm.getPublicKey();
 	}
@@ -127,10 +171,12 @@ public class MessagePage extends Application {
 		VBox root = new VBox();
 
 		outputMsg = new Text();
+		outputMsg.setId("ErrorMsg");
 		root.getChildren().add(outputMsg);
 
 		// Text interactions
 		inputoutput = new TextArea();
+		inputoutput.setId("inputoutput");
 		inputoutput.setEditable(false);
 		inputoutput.setWrapText(true);
 
@@ -141,7 +187,7 @@ public class MessagePage extends Application {
 		root.getChildren().add(sp);
 
 		output = new TextField();
-		output.setId("box1");
+		output.setId("sendArea");
 
 		Button b = new Button("Send msg");
 		b.setId("SendMsgButton");
@@ -161,18 +207,18 @@ public class MessagePage extends Application {
 		return root;
 	}
 
-	private void sendMessage() throws IOException {		
+	private void sendMessage() throws IOException {
 		String msg = output.getText();
 		if (msg == "")
 			return;
-		
+
 		output.setText("");
 		Pattern pattern = Pattern.compile("\\s+");
 		Matcher matcher = pattern.matcher(msg);
-		
+
 		if (!matcher.matches()) {
 			c.sendMessage(msg);
 			recieveMessage("You: " + msg);
-		} 
+		}
 	}
 }
