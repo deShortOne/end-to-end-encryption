@@ -38,7 +38,7 @@ public class MessagePage extends Application {
 	
 	private static String[] fakeNames = new String[] {
 			"Alice", "Bob", "Charlie", "Dieago", "Faizan", "Ghozi", 
-			"Holly", "Imogen", "Julia"
+			"Holly", "Imogen", "Julia", "Kieran"
 	};
 	/**
 	 * Testing. username of self.
@@ -117,6 +117,10 @@ public class MessagePage extends Application {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public byte[] getPublicKey() {
+		return cm.getPublicKey();
 	}
 
 	private Parent messageWindow() {

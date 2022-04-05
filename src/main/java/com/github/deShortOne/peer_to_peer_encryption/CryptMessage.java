@@ -6,9 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -35,6 +39,25 @@ public class CryptMessage {
 
 	public CryptMessage(RSAEncryption rsa) {
 		this.rsa = rsa;
+	}
+
+	public byte[] getPublicKey() {
+		PublicKey key = rsa.getPublicKey();
+		return key.getEncoded();
+	}
+
+	public static PublicKey createPublicKey(byte[] publicKeyBytes)
+			throws InvalidKeySpecException {
+		KeyFactory keyFactory;
+		try {
+			keyFactory = KeyFactory.getInstance("RSA");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
+		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+
+		return keyFactory.generatePublic(publicKeySpec);
 	}
 
 	public String saveMessage(String clearMessage)
@@ -131,11 +154,12 @@ public class CryptMessage {
 				iv);
 		return clearMsg;
 	}
-	
+
 	public static byte[][] sendFile(File file, PublicKey pubKey)
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException, IOException {
+			BadPaddingException, InvalidAlgorithmParameterException,
+			IOException {
 
 		String algorithm = "AES/CBC/PKCS5Padding";
 
@@ -148,11 +172,12 @@ public class CryptMessage {
 
 		byte[] base = RSAEncryption.encrypt(sb.toString(), pubKey);
 
-		byte[] encryptedFile = AESEncryption.encryptFile(algorithm, key, iv, file);
+		byte[] encryptedFile = AESEncryption.encryptFile(algorithm, key, iv,
+				file);
 
 		return new byte[][] { base, encryptedFile };
 	}
-	
+
 	/**
 	 * Currently deprecated as is incorrect
 	 */
@@ -182,8 +207,7 @@ public class CryptMessage {
 		IvParameterSpec iv = new IvParameterSpec(
 				Base64.getDecoder().decode(sb.toString()));
 
-		String clearMsg = AESEncryption.decrypt(algorithm, cipherFile, key,
-				iv);
+		String clearMsg = AESEncryption.decrypt(algorithm, cipherFile, key, iv);
 		return null;
 	}
 }

@@ -212,6 +212,7 @@ public class RSAEncryption {
 	 * DEBUG. Shouldn't normally call a method that isn't usually called in the
 	 * normal use of the application
 	 * 
+	 * FIXME: Should this ever return public key or only byte[]
 	 * @return
 	 */
 	public PublicKey getPublicKey() {
