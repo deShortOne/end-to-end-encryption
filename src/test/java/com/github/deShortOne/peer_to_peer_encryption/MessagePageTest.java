@@ -60,8 +60,8 @@ public class MessagePageTest {
 		Assertions.assertTrue(true);
 	}
 
-	@Test
-	public void testmessaging(FxRobot robot) {
+	// @Test
+	public void testSmallMessaging(FxRobot robot) {
 		robot.clickOn(per1SendBox).write("Hii!").clickOn(per1SendButton);
 		Assertions.assertEquals("", per1SendBox.getText());
 		String serverMessages = "You: Hii!\n";
@@ -74,8 +74,42 @@ public class MessagePageTest {
 		Assertions.assertEquals("", per2SendBox.getText());
 		clientMessages += "You: Sup!\n";
 		Assertions.assertEquals(clientMessages, per2InputOutput.getText());
-		
+
 		serverMessages += mp2.getName() + ": Sup!\n";
+		Assertions.assertEquals(serverMessages, per1InputOutput.getText());
+	}
+
+	/**
+	 * Sending messages above 127 bytes. Not sure how to count, but just sending
+	 * large message.
+	 * Expensive - takes long time
+	 * 
+	 * @param robot
+	 */
+	@Test
+	public void testLargeMessaging(FxRobot robot) {
+		String tmpMsg = "abcdefghijklmnopqrstuvwxyz";
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 8; i++) {
+			sb.append(tmpMsg);
+		}
+		String msg = sb.toString();
+		
+		robot.clickOn(per1SendBox).write(msg).clickOn(per1SendButton);
+		Assertions.assertEquals("", per1SendBox.getText());
+		String serverMessages = "You: " + msg +"\n";
+		Assertions.assertEquals(serverMessages, per1InputOutput.getText());
+
+		String clientMessages = mp1.getName() + ": " + msg + "\n";
+		Assertions.assertEquals(clientMessages, per2InputOutput.getText());
+
+		msg = sb.reverse().toString();
+		robot.clickOn(per2SendBox).write(msg).clickOn(per2SendButton);
+		Assertions.assertEquals("", per2SendBox.getText());
+		clientMessages += "You: " + msg + "\n";
+		Assertions.assertEquals(clientMessages, per2InputOutput.getText());
+
+		serverMessages += mp2.getName() + ": " + msg + "\n";
 		Assertions.assertEquals(serverMessages, per1InputOutput.getText());
 	}
 
