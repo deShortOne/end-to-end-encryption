@@ -39,14 +39,10 @@ public class ConnectionRecieve implements Runnable {
 			e2.printStackTrace();
 			return;
 		}
-		System.out.println("Ready");
 		while (true) {
 			try {
-				System.out.println(1);
 				String s = getMessage(br);
-				System.out.println(2);
 				mp.recieveMessage(nameOfOther + ": " + s);
-				System.out.println(3);
 			} catch (SocketException e1) {
 				System.err.println("Connection lost");
 				break;

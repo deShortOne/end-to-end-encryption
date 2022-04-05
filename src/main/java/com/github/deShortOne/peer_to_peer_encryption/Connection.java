@@ -105,10 +105,6 @@ public class Connection {
 	}
 
 	public void sendMessage(String msg) throws IOException {
-		String a20 = "aaaaaaaaaaaaaaaaaaaa";
-		for (int i = 0; i < 10; i++) {
-			msg += a20;
-		}
 		sendMessage(msg.getBytes());
 	}
 
