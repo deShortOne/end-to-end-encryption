@@ -20,6 +20,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.Random;
+
 public class MessagePage extends Application {
 
 	private Connection c;
@@ -29,7 +31,19 @@ public class MessagePage extends Application {
 	private TextArea inputoutput;
 
 	private Text outputMsg;
+	
+	private CryptMessage cm;
+	
+	private static Random rand = new Random();
+	
+	/**
+	 * Testing. username of self.
+	 */
+	private String name = String.valueOf(rand.nextInt(10));
 
+	/**
+	 * Testing
+	 */
 	public MessagePage() {
 //		try {
 //			c = new Connection(this);
@@ -38,9 +52,21 @@ public class MessagePage extends Application {
 //			// Invalid Connection
 //		}
 	}
+	
+	/**
+	 * Real one.
+	 * @param cm
+	 */
+	public MessagePage(CryptMessage cm) {
+		this.cm = cm;
+	}
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		// should be passed in
+		cm = new CryptMessage(new RSAEncryption(name, name, true));
+		/**/
+		
 		Scene s = new Scene(setupPage());
 
 		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
@@ -57,6 +83,7 @@ public class MessagePage extends Application {
 
 		primaryStage.setScene(s);
 		primaryStage.show();
+		primaryStage.setTitle(name);
 
 		try {
 			c = new Connection(this);
@@ -69,7 +96,7 @@ public class MessagePage extends Application {
 		launch(args);
 	}
 
-	public Parent setupPage() {
+	private Parent setupPage() {
 		BorderPane root = new BorderPane();
 		root.setCenter(messageWindow());
 		return root;
@@ -83,8 +110,12 @@ public class MessagePage extends Application {
 	public void setErrorMsg(String msg) {
 		outputMsg.setText(msg);
 	}
+	
+	public String getName() {
+		return name;
+	}
 
-	public Parent messageWindow() {
+	private Parent messageWindow() {
 		VBox root = new VBox();
 
 		outputMsg = new Text();

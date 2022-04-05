@@ -79,8 +79,8 @@ public class Connection {
 			}.start();
 
 		} else {
-			setUpReciever();
 			setUpSender();
+			setUpReciever();
 			mp.setErrorMsg("");
 		}
 	}
@@ -94,6 +94,10 @@ public class Connection {
 	private void setUpSender() {
 		try {
 			output = socket.getOutputStream();
+			// Should send public key?
+//			String username = mp.getName();
+//			sendMessage();
+			
 		} catch (IOException e1) {
 			System.err.println("Cannot connect");
 			return;
@@ -106,8 +110,10 @@ public class Connection {
 
 	public void sendMessage(byte[] msg) throws IOException {
 		if (output != null) {
-			output.write(msg);
-			output.write("\n".getBytes());
+			if (msg.length > 127)
+				System.err.println("Not yet implemented!");
+			output.write(msg.length);
+			output.write(msg); //Message
 		}
 	}
 

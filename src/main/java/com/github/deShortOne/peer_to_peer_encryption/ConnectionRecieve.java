@@ -30,15 +30,22 @@ public class ConnectionRecieve implements Runnable {
 		BufferedReader br = new BufferedReader(isr);
 		while (true) {
 			try {
-				String answer = br.readLine();
-				mp.recieveMessage("Other person: " + answer);
+				
+				int lengthOfMessage = br.read();
+				
+				StringBuilder sb = new StringBuilder();
+				for (; lengthOfMessage > 0; lengthOfMessage--) {
+					sb.append((char) br.read());
+				}
+				// String answer = br.readLine();
+				mp.recieveMessage("Other person: " + sb.toString());
 			} catch (SocketException e1) {
 				System.err.println("Connection lost");
 				break;
-			}catch (IOException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 				break;
-			} 
+			}
 		}
 	}
 
