@@ -140,12 +140,13 @@ public class MessagePage extends Application {
 		}
 	}
 
-	public static void main(String[] args) {
+	public void main(String[] args) {
 		launch(args);
 	}
 
 	private Parent setupPage() {
 		BorderPane root = new BorderPane();
+		root.setId("root");
 		root.setCenter(messageWindow());
 		return root;
 	}
@@ -169,6 +170,7 @@ public class MessagePage extends Application {
 
 	private Parent messageWindow() {
 		VBox root = new VBox();
+		root.setId("messageWindow");
 
 		outputMsg = new Text();
 		outputMsg.setId("ErrorMsg");
@@ -180,9 +182,11 @@ public class MessagePage extends Application {
 		inputoutput.setEditable(false);
 		inputoutput.setWrapText(true);
 
-		ScrollPane sp = new ScrollPane(inputoutput);
+		ScrollPane sp = new ScrollPane();
+		sp.setId("scrollpane");
 		sp.setHbarPolicy(ScrollBarPolicy.NEVER);
 		sp.setVbarPolicy(ScrollBarPolicy.NEVER);
+		sp.setContent(inputoutput);
 
 		root.getChildren().add(sp);
 
@@ -200,6 +204,7 @@ public class MessagePage extends Application {
 		});
 
 		HBox sendRow = new HBox();
+		sendRow.setId("sendrow");
 		sendRow.getChildren().addAll(output, b);
 
 		root.getChildren().add(sendRow);

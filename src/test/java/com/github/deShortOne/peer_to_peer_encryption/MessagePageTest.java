@@ -8,8 +8,9 @@ import org.testfx.framework.junit5.Start;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -17,83 +18,113 @@ import javafx.stage.Stage;
 @ExtendWith(ApplicationExtension.class)
 public class MessagePageTest {
 
-	private Parent nodesInScene1;	
-	private TextField per1Box1;
-	private TextField per1Box2;
-	private Button per1SendBut;
+	private Parent mp1;
 	private Text per1OutputMsg;
-
-//	private Parent nodesInScene2;
-//	private TextField per2Box1;
-//	private TextField per2Box2;
-//	private Button per2SendBut;
-//	private Text per2OutputMsg;
+	private TextArea per1InputOutput;
+	private TextField per1SendBox;
+	private Button per1SendButton;
 	
+	private Parent mp2;
+	private Text per2OutputMsg;
+	private TextArea per2InputOutput;
+	private TextField per2SendBox;
+	private Button per2SendButton;
+
 	@Start
 	public void start(Stage stage) {
 		MessagePage mp1 = new MessagePage();
-//		nodesInScene1 = mp1.setupPage();
-//		Scene s1 = new Scene(nodesInScene1);
-//		stage.setScene(s1);
+		mp1.setStage(stage);
 		stage.show();
-//		
-//		Stage per2 = new Stage();
-//		MessagePage mp2 = new MessagePage();
-//		nodesInScene2 = mp2.setupPage();
-//		Scene s2 = new Scene(nodesInScene2);
-//		per2.setScene(s2);
-//		per2.show();
-		
-//		setVariousNodes();
+		this.mp1 = stage.getScene().getRoot();
+
+		Stage stage2 = new Stage();
+		MessagePage mp2 = new MessagePage();
+		mp2.setStage(stage2);
+		stage2.show();
+		this.mp2 = stage2.getScene().getRoot();
 	}
-	
+
 	@Test
 	public void initialTest() {
-		try {
-			Thread.sleep(25);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		setVariousNodes();
 		Assertions.assertTrue(true);
 	}
-	
+
 	private void setVariousNodes() {
-		Assertions.assertNotNull(nodesInScene1);
-		for (Node p : nodesInScene1.getChildrenUnmodifiable()) {
+		Assertions.assertNotNull(mp1);
+		for (Node p : mp1.getChildrenUnmodifiable()) {
 			if (p.getId() == null)
 				continue;
-			
-			switch (p.getId()) {
-			case "box1" -> per1Box1 = (TextField) p;
-			case "box2" -> per1Box2 = (TextField) p;
-			case "SendMsgButton" -> per1SendBut = (Button) p;
-			case "ErrorMsg" -> per1OutputMsg = (Text) p;
+			if (p.getId().equals("messageWindow")) {
+				for (Node messageWindow : ((Parent) p)
+						.getChildrenUnmodifiable()) {
+					if (messageWindow.getId() == null)
+						continue;
+					if (messageWindow.getId().equals("scrollpane")) {
+						per1InputOutput = (TextArea) ((ScrollPane) messageWindow)
+								.getContent();
+					} else if (messageWindow.getId().equals("sendrow")) {
+
+						for (Node p3 : ((Parent) messageWindow)
+								.getChildrenUnmodifiable()) {
+
+							if (p3.getId() == null)
+								continue;
+							switch (p3.getId()) {
+							case "sendArea" -> per1SendBox = (TextField) p3;
+							case "SendMsgButton" -> per1SendButton = (Button) p3;
+							}
+						}
+					} else {
+						switch (messageWindow.getId()) {
+						case "ErrorMsg" -> per1OutputMsg = (Text) messageWindow;
+						}
+					}
+				}
 			}
 		}
-		Assertions.assertNotNull(nodesInScene1);
-		Assertions.assertNotNull(per1Box1);
-		Assertions.assertNotNull(per1Box2);
-		Assertions.assertNotNull(per1SendBut);
 		Assertions.assertNotNull(per1OutputMsg);
+		Assertions.assertNotNull(per1InputOutput);
+		Assertions.assertNotNull(per1SendBox);
+		Assertions.assertNotNull(per1SendButton);
+
+		/**/
 		
-//		Assertions.assertNotNull(nodesInScene2);
-//		for (Node p : nodesInScene2.getChildrenUnmodifiable()) {
-//			if (p.getId() == null)
-//				continue;
-//			
-//			switch (p.getId()) {
-//			case "box1" -> per1Box1 = (TextField) p;
-//			case "box2" -> per1Box2 = (TextField) p;
-//			case "SendMsgButton" -> per1SendBut = (Button) p;
-//			case "ErrorMsg" -> per1OutputMsg = (Text) p;
-//			}
-//		}
-//		Assertions.assertNotNull(nodesInScene2);
-//		Assertions.assertNotNull(per2Box1);
-//		Assertions.assertNotNull(per2Box2);
-//		Assertions.assertNotNull(per2SendBut);
-//		Assertions.assertNotNull(per2OutputMsg);
+		Assertions.assertNotNull(mp2);
+		for (Node p : mp2.getChildrenUnmodifiable()) {
+			if (p.getId() == null)
+				continue;
+			if (p.getId().equals("messageWindow")) {
+				for (Node messageWindow : ((Parent) p)
+						.getChildrenUnmodifiable()) {
+					if (messageWindow.getId() == null)
+						continue;
+					if (messageWindow.getId().equals("scrollpane")) {
+						per2InputOutput = (TextArea) ((ScrollPane) messageWindow)
+								.getContent();
+					} else if (messageWindow.getId().equals("sendrow")) {
+
+						for (Node p3 : ((Parent) messageWindow)
+								.getChildrenUnmodifiable()) {
+
+							if (p3.getId() == null)
+								continue;
+							switch (p3.getId()) {
+							case "sendArea" -> per2SendBox = (TextField) p3;
+							case "SendMsgButton" -> per2SendButton = (Button) p3;
+							}
+						}
+					} else {
+						switch (messageWindow.getId()) {
+						case "ErrorMsg" -> per2OutputMsg = (Text) messageWindow;
+						}
+					}
+				}
+			}
+		}
+		Assertions.assertNotNull(per2OutputMsg);
+		Assertions.assertNotNull(per2InputOutput);
+		Assertions.assertNotNull(per2SendBox);
+		Assertions.assertNotNull(per2SendButton);
 	}
 }
