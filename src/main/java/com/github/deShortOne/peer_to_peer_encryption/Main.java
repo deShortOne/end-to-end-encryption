@@ -16,6 +16,11 @@ public class Main extends Application {
 		stage.show();
 	}
 	
+	public void updateScene(Scene scene) {
+		stage.setScene(scene);
+		stage.show();
+	}
+	
 	
 	public static void main(String[] args) {
 		launch(args);
