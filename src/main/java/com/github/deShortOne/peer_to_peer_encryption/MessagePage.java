@@ -2,13 +2,11 @@ package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import javafx.application.Application;
@@ -76,10 +74,8 @@ public class MessagePage extends Application {
 		// should be passed in
 		try {
 			cm = new CryptMessage(new RSAEncryption(name, name, true));
-		} catch (InvalidKeyException | NoSuchAlgorithmException
-				| InvalidKeySpecException | NoSuchPaddingException
-				| IllegalBlockSizeException | BadPaddingException
-				| IOException e1) {
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| NoSuchPaddingException | IOException e1) {
 			e1.printStackTrace();
 		}
 
