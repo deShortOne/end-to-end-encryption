@@ -2,13 +2,11 @@ package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.IOException;
 import java.net.SocketException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import javafx.application.Application;
