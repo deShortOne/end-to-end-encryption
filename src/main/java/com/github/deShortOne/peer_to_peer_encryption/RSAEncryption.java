@@ -95,6 +95,30 @@ public class RSAEncryption {
 		return out;
 	}
 
+	public static PublicKey getCommonKey() throws IOException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
+		File publicKeyFile = new File(publicKeyFileLoc + "public.key");
+		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+		return keyFactory.generatePublic(publicKeySpec);
+	}
+
+	public static PublicKey createPublicKey(byte[] publicKeyBytes)
+			throws InvalidKeySpecException {
+		KeyFactory keyFactory;
+		try {
+			keyFactory = KeyFactory.getInstance("RSA");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+		return keyFactory.generatePublic(publicKeySpec);
+	}
+
 	public void getKeys() throws IOException, InvalidKeySpecException,
 			NoSuchAlgorithmException {
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -213,6 +237,7 @@ public class RSAEncryption {
 	 * normal use of the application
 	 * 
 	 * FIXME: Should this ever return public key or only byte[]
+	 * 
 	 * @return
 	 */
 	public PublicKey getPublicKey() {

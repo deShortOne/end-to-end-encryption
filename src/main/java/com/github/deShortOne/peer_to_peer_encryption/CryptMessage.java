@@ -42,7 +42,14 @@ public class CryptMessage {
 	}
 
 	public byte[] getPublicKey() {
-		PublicKey key = rsa.getPublicKey();
+		PublicKey key;
+		try {
+			key = RSAEncryption.getCommonKey();
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 		return key.getEncoded();
 	}
 

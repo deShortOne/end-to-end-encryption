@@ -1,12 +1,16 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 
 public class ConnectionRecieve implements Runnable {
 
@@ -28,12 +32,12 @@ public class ConnectionRecieve implements Runnable {
 			e.printStackTrace();
 			return;
 		}
-		InputStreamReader isr = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(isr);
+		DataInputStream dis = new DataInputStream(is);
 
 		try {
-			nameOfOther = getMessage(br);
-
+			nameOfOther = getMessage(dis);
+			getPublicKey(dis);
+			System.out.println("End key created!!!");
 		} catch (SocketException e1) {
 			System.err.println("Connection lost");
 			return;
@@ -43,7 +47,7 @@ public class ConnectionRecieve implements Runnable {
 		}
 		while (true) {
 			try {
-				mp.recieveMessage(nameOfOther + ": " + getMessage(br));
+				mp.recieveMessage(nameOfOther + ": " + getMessage(dis));
 			} catch (SocketException e1) {
 				System.err.println("Connection lost");
 				break;
@@ -54,27 +58,37 @@ public class ConnectionRecieve implements Runnable {
 		}
 	}
 
-	private PublicKey getPublicKey(BufferedReader br) {
+	private PublicKey getPublicKey(DataInputStream dis) throws IOException {
+
+		int lengthOfMessage = getMessageLength(dis);
 		
-		return null;
-	}
-
-	private String getMessage(BufferedReader br) throws IOException {
-		int lengthOfMessage = getMessageLength(br);
-
-		StringBuilder sb = new StringBuilder();
-		for (; lengthOfMessage > 0; lengthOfMessage--) {
-			sb.append((char) br.read());
+		byte[] out = new byte[lengthOfMessage];
+		dis.readFully(out);
+		
+		try {
+			return RSAEncryption.createPublicKey(out); //getMessage(br).getBytes()
+		} catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+			System.err.println("Invalid key");
+			return null;
 		}
-
-		return sb.toString();
 	}
 
-	private int getMessageLength(BufferedReader br) throws IOException {
-		int lengthOfMessage = br.read();
+	private String getMessage(DataInputStream dis) throws IOException {
+		int lengthOfMessage = getMessageLength(dis);
+
+		byte[] arr = new byte[lengthOfMessage];
+		dis.readFully(arr);
+		
+		return dis.toString();
+	}
+
+	private int getMessageLength(DataInputStream dis) throws IOException {
+		
+		int lengthOfMessage = dis.readInt();
 		if (lengthOfMessage == 0) {
 			StringBuilder sb = new StringBuilder();
-			while ((lengthOfMessage = br.read()) != 10) {
+			while ((lengthOfMessage = dis.readInt()) != 10) {
 				sb.append(lengthOfMessage);
 			}
 			lengthOfMessage = Integer.valueOf(sb.toString());

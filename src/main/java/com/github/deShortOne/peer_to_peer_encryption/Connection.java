@@ -1,12 +1,16 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 
 public class Connection {
 
@@ -16,7 +20,7 @@ public class Connection {
 	private OutputStream output;
 
 	private MessagePage mp;
-	
+
 	private PublicKey pubKey;
 
 	/**
@@ -64,7 +68,7 @@ public class Connection {
 		this.mp = mp;
 		setup();
 	}
-	
+
 	public void setPublicKey(PublicKey pubKey) {
 		this.pubKey = pubKey;
 	}
@@ -76,8 +80,8 @@ public class Connection {
 					try {
 						mp.setErrorMsg("Not connected to client");
 						socket = server.accept();
-						setUpReciever();
 						setUpSender();
+						setUpReciever();
 						mp.setErrorMsg("");
 					} catch (IOException e) {
 
@@ -86,8 +90,8 @@ public class Connection {
 			}.start();
 
 		} else {
-			setUpSender();
 			setUpReciever();
+			setUpSender();
 			mp.setErrorMsg("");
 		}
 	}
@@ -102,8 +106,9 @@ public class Connection {
 		try {
 			output = socket.getOutputStream();
 			sendMessage(mp.getName());
-			
-			// sendMessage(mp.getPublicKey());
+
+			sendMessage(mp.getPublicKey());
+
 		} catch (IOException e1) {
 			System.err.println("Cannot connect");
 			return;
@@ -114,21 +119,40 @@ public class Connection {
 		sendMessage(msg.getBytes());
 	}
 
-	public void sendMessage(byte[] msg) throws IOException {
+	private byte[] lis() {
+		byte[] out = new byte[256];
+		
+		for (byte i = -127; i < 128; i++) {
+			out[i + 128] = i;
+		}
+		
+		return out;
+	}
+	
+	private void sendMessage(byte[] msg) throws IOException {
+		
+		DataOutputStream dis = new DataOutputStream(output);
+		
+		System.out.println(" > " + msg.length);
 		if (output != null) {
 			if (msg.length > 127) {
-				output.write(0);
-				
+				dis.writeInt(0);
+
 				String len = String.valueOf(msg.length);
 				for (byte i : len.getBytes()) {
-					output.write(i - '0');
+					dis.writeInt(i - '0');
 				}
-				
-				output.write(10);
+
+				dis.writeInt(10);
 			} else {
-				output.write(msg.length);
+				dis.writeInt(msg.length);
 			}
-			output.write(msg); // Message
+
+			for (int i = 0; i < msg.length; i++) {
+				System.out.println(i + " " + msg[i]);
+				dis.write(msg[i]);
+			}
+			// output.write(msg); // Message
 		}
 	}
 
