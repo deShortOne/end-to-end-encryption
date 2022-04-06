@@ -97,12 +97,24 @@ public class RSAEncryption {
 
 	public static PublicKey getCommonKey() throws IOException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		File publicKeyFile = new File(publicKeyFileLoc + "public.key");
+		File publicKeyFile = new File(publicKeyFileLoc + ".pubkey");
 		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
 
 		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 		return keyFactory.generatePublic(publicKeySpec);
+	}
+	
+	public static PrivateKey getCommonPrivateKey()
+			throws IOException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
+		File privateKeyFile = new File(publicKeyFileLoc + ".prikey");
+		byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
+
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
+				privateKeyBytes);
+		return keyFactory.generatePrivate(privateKeySpec);
 	}
 
 	public static PublicKey createPublicKey(byte[] publicKeyBytes)

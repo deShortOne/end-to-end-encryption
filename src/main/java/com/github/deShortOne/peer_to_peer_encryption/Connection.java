@@ -7,18 +7,29 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 public class Connection {
 
 	private Socket socket;
 	private ServerSocket server;
 	private int port = 8080;
-	private OutputStream output;
+	private CryptMessage cm;
+	private DataOutputStream output;
 
 	private MessagePage mp;
 
 	private PublicKey pubKey;
+
+	static byte[] base;
+	static byte[] msg;
 
 	/**
 	 * Server port number. Only specific server.
@@ -26,25 +37,28 @@ public class Connection {
 	 * @param port
 	 * @throws IOException end
 	 */
-	public Connection(int port, MessagePage mp) throws IOException {
+	public Connection(int port, MessagePage mp, CryptMessage cm)
+			throws IOException {
 		server = new ServerSocket(port);
 		this.mp = mp;
+		this.cm = cm;
 		System.out.println("I'm a server");
 
 		setup();
 	}
 
 	// Client
-	public Connection(InetAddress toAddress, MessagePage mp)
+	public Connection(InetAddress toAddress, MessagePage mp, CryptMessage cm)
 			throws IOException {
-		this(toAddress, 8080, mp);
+		this(toAddress, 8080, mp, cm);
 	}
 
 	// Client - end
-	public Connection(InetAddress toAddress, int port, MessagePage mp)
-			throws IOException {
+	public Connection(InetAddress toAddress, int port, MessagePage mp,
+			CryptMessage cm) throws IOException {
 		socket = new Socket(toAddress, port);
 		this.mp = mp;
+		this.cm = cm;
 		System.out.println("I'm the client");
 		setup();
 	}
@@ -54,7 +68,7 @@ public class Connection {
 	 * 
 	 * @throws IOException
 	 */
-	public Connection(MessagePage mp) throws IOException {
+	public Connection(MessagePage mp, CryptMessage cm) throws IOException {
 		try {
 			server = new ServerSocket(port);
 			System.out.println("I'm a server");
@@ -63,11 +77,39 @@ public class Connection {
 			System.out.println("I'm the client");
 		}
 		this.mp = mp;
+		this.cm = cm;
 		setup();
 	}
 
 	public void setPublicKey(PublicKey pubKey) {
 		this.pubKey = pubKey;
+		if (this.pubKey.getEncoded().equals(cm.getPublicKey())) {
+		} else {
+			// System.out.println("Bad pub key"); Comes up as not equal but...
+			// values are the same?
+			for (int i = 0; i < pubKey.getEncoded().length; i++)
+				if (cm.getPublicKey()[i] != pubKey.getEncoded()[i])
+					System.out.println(i + ") " + cm.getPublicKey()[i] + " -> "
+							+ pubKey.getEncoded()[i]);
+
+			// Test if pubkey is correct
+			// Only works if pubkey is common, which in this very specific case is
+			String msg = "ahioeqmsdoghamdsaf";
+			try {
+				byte[][] a = CryptMessage.sendMessage(msg, pubKey);
+				String msg2 = CryptMessage.recieveMessage(a[0], a[1], cm.debugGetPrivate());
+
+				System.out.println("Key is good - " + msg.equals(msg2));
+			} catch (InvalidKeyException | NoSuchPaddingException
+					| IllegalBlockSizeException | BadPaddingException
+					| InvalidAlgorithmParameterException
+					| NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				System.out.println("Key ERROR");
+				return;
+			}
+
+		}
 	}
 
 	public void setup() {
@@ -94,16 +136,16 @@ public class Connection {
 	}
 
 	private void setUpReciever() {
-		ConnectionRecieve rm = new ConnectionRecieve(this, socket, mp);
+		ConnectionRecieve rm = new ConnectionRecieve(this, socket, mp, cm);
 		Thread t = new Thread(rm);
 		t.start();
 	}
 
 	private void setUpSender() {
 		try {
-			output = socket.getOutputStream();
-			sendMessage(mp.getName());
-
+			OutputStream output = socket.getOutputStream();
+			this.output = new DataOutputStream(output);
+			sendMessageClear(mp.getName());
 			sendMessage(mp.getPublicKey());
 
 		} catch (IOException e1) {
@@ -112,17 +154,30 @@ public class Connection {
 		}
 	}
 
-	public void sendMessage(String msg) throws IOException {
+	private void sendMessageClear(String msg) throws IOException {
 		sendMessage(msg.getBytes());
 	}
-	
+
+	public void sendMessageEncrypted(String msg) throws IOException {
+		try {
+			byte[][] encryptedMessage = CryptMessage.sendMessage(msg, pubKey);
+			base = encryptedMessage[0];
+			this.msg = encryptedMessage[1];
+
+			sendMessage(encryptedMessage[0]);
+			sendMessage(encryptedMessage[1]);
+		} catch (InvalidKeyException | NoSuchPaddingException
+				| IllegalBlockSizeException | BadPaddingException
+				| InvalidAlgorithmParameterException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	private void sendMessage(byte[] msg) throws IOException {
-		
-		DataOutputStream dis = new DataOutputStream(output);
-		
 		if (output != null) {
-			dis.writeInt(msg.length);
-			dis.write(msg);
+			output.writeInt(msg.length);
+			output.write(msg);
 		}
 	}
 

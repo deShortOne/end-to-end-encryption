@@ -82,7 +82,6 @@ public class MessagePage extends Application {
 				| IOException e1) {
 			e1.printStackTrace();
 		}
-		/**/
 
 		Scene s = new Scene(setupPage());
 
@@ -103,7 +102,7 @@ public class MessagePage extends Application {
 		stage.setTitle(name);
 
 		try {
-			c = new Connection(this);
+			c = new Connection(this, cm);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -134,7 +133,7 @@ public class MessagePage extends Application {
 		primaryStage.setTitle(name);
 
 		try {
-			c = new Connection(this);
+			c = new Connection(this, cm);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -222,7 +221,7 @@ public class MessagePage extends Application {
 		Matcher matcher = pattern.matcher(msg);
 
 		if (!matcher.matches()) {
-			c.sendMessage(msg);
+			c.sendMessageEncrypted(msg);
 			recieveMessage("You: " + msg);
 		}
 	}

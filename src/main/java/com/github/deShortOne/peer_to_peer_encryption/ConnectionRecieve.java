@@ -6,20 +6,29 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 public class ConnectionRecieve implements Runnable {
 
 	private Connection connection;
 	private Socket socket;
 	private MessagePage mp;
+	private CryptMessage cm;
 	private String nameOfOther;
 
-	public ConnectionRecieve(Connection connection, Socket socket, MessagePage mp) {
+	public ConnectionRecieve(Connection connection, Socket socket,
+			MessagePage mp, CryptMessage cm) {
 		this.connection = connection;
 		this.socket = socket;
 		this.mp = mp;
+		this.cm = cm;
 	}
 
 	@Override
@@ -34,7 +43,7 @@ public class ConnectionRecieve implements Runnable {
 		DataInputStream dis = new DataInputStream(is);
 
 		try {
-			nameOfOther = getMessage(dis);
+			nameOfOther = getMessageClear(dis);
 			connection.setPublicKey(getPublicKey(dis));
 			System.out.println("Key created");
 		} catch (SocketException e1) {
@@ -47,28 +56,42 @@ public class ConnectionRecieve implements Runnable {
 			System.err.println("Invalid key");
 			return;
 		}
-		
+
 		while (true) {
 			try {
-				mp.recieveMessage(nameOfOther + ": " + getMessage(dis));
-			} catch (SocketException e1) {
+				byte[] base = getBytes(dis);
+				if (!base.equals(Connection.base)) {
+					System.out.println("Base bad");
+				}
+				byte[] cipherMessage = getBytes(dis);
+				if (!cipherMessage.equals(Connection.msg)) {
+					System.out.println("msg bad");
+				}
+				mp.recieveMessage(nameOfOther + ": " + cm.recieveMessage(base, cipherMessage));
+			} catch (SocketException e) {
 				System.err.println("Connection lost");
 				break;
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				break;
+			} catch (InvalidKeyException | NoSuchAlgorithmException
+					| NoSuchPaddingException | IllegalBlockSizeException
+					| BadPaddingException e2) {
+				e2.printStackTrace();
 				break;
 			}
 		}
 	}
 
-	private PublicKey getPublicKey(DataInputStream dis) throws IOException, InvalidKeySpecException {
+	private PublicKey getPublicKey(DataInputStream dis)
+			throws IOException, InvalidKeySpecException {
 		return RSAEncryption.createPublicKey(getBytes(dis));
 	}
 
-	private String getMessage(DataInputStream dis) throws IOException {
+	private String getMessageClear(DataInputStream dis) throws IOException {
 		return new String(getBytes(dis), StandardCharsets.UTF_8);
 	}
-	
+
 	private byte[] getBytes(DataInputStream dis) throws IOException {
 		int lengthOfMessage = dis.readInt();
 

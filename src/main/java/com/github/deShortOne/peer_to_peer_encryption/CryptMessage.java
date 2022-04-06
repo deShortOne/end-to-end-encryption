@@ -42,7 +42,24 @@ public class CryptMessage {
 	}
 
 	public byte[] getPublicKey() {
-		return rsa.getPublicKey().getEncoded();
+//		return rsa.getPublicKey().getEncoded();
+		try {
+			return RSAEncryption.getCommonKey().getEncoded();
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| IOException e) {
+			return null;
+		}
+	}
+	
+	@Deprecated
+	public PrivateKey debugGetPrivate() {
+		try {
+			return RSAEncryption.getCommonPrivateKey();
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public static PublicKey createPublicKey(byte[] publicKeyBytes)
@@ -82,25 +99,30 @@ public class CryptMessage {
 	 *         message
 	 */
 	public static byte[][] sendMessage(String clearMessage, PublicKey pubKey)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException {
+			throws InvalidKeyException, NoSuchPaddingException,
+			IllegalBlockSizeException, BadPaddingException,
+			InvalidAlgorithmParameterException {
 
-		String algorithm = "AES/CBC/PKCS5Padding";
+		try {
+			String algorithm = "AES/CBC/PKCS5Padding";
 
-		SecretKey key = AESEncryption.generateKey(256);
-		IvParameterSpec iv = AESEncryption.generateIv();
+			SecretKey key = AESEncryption.generateKey(256);
+			IvParameterSpec iv = AESEncryption.generateIv();
 
-		StringBuilder sb = new StringBuilder();
-		sb.append(Base64.getEncoder().encodeToString(key.getEncoded()));
-		sb.append(Base64.getEncoder().encodeToString(iv.getIV()));
+			StringBuilder sb = new StringBuilder();
+			sb.append(Base64.getEncoder().encodeToString(key.getEncoded()));
+			sb.append(Base64.getEncoder().encodeToString(iv.getIV()));
 
-		byte[] base = RSAEncryption.encrypt(sb.toString(), pubKey);
+			byte[] base = RSAEncryption.encrypt(sb.toString(), pubKey);
 
-		byte[] encryptedMsg = AESEncryption.encrypt(algorithm, clearMessage,
-				key, iv);
+			byte[] encryptedMsg = AESEncryption.encrypt(algorithm, clearMessage,
+					key, iv);
 
-		return new byte[][] { base, encryptedMsg };
+			return new byte[][] { base, encryptedMsg };
+		} catch (NoSuchAlgorithmException e) {
+			System.err.println("AES Encryption algorithm incorrect");
+			return null;
+		}
 	}
 
 	public String recieveMessage(byte[] base, byte[] cipherMessage)
