@@ -2,10 +2,8 @@ package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -22,66 +20,34 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import javafx.geometry.Insets;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-
 public class CryptMessage {
 
-	private String username;
 	private RSAEncryption rsa;
+
+	private static KeyFactory keyFactory;
+	private static String algorithm = "AES/CBC/PKCS5Padding";
 
 	public CryptMessage(RSAEncryption rsa) {
 		this.rsa = rsa;
-	}
 
-	public byte[] getPublicKey() {
-		return rsa.getPublicKey().getEncoded();
-//		try {
-//			return RSAEncryption.getCommonKey().getEncoded();
-//		} catch (NoSuchAlgorithmException | InvalidKeySpecException
-//				| IOException e) {
-//			return null;
-//		}
-	}
-
-	@Deprecated
-	private PrivateKey debugGetPrivate() {
-		try {
-			return RSAEncryption.getCommonPrivateKey();
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException
-				| IOException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public static PublicKey createPublicKey(byte[] publicKeyBytes)
-			throws InvalidKeySpecException {
-		KeyFactory keyFactory;
 		try {
 			keyFactory = KeyFactory.getInstance("RSA");
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
-			return null;
 		}
-		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-
-		return keyFactory.generatePublic(publicKeySpec);
 	}
 
-	public String saveMessage(String clearMessage)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException {
+	public byte[] getPublicKey() {
+		return rsa.getPublicKey().getEncoded();
+	}
 
-		return null;
+	public static PublicKey createPublicKey(byte[] publicKeyBytes)
+			throws InvalidKeySpecException {
+		if (keyFactory == null)
+			return null;
+
+		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+		return keyFactory.generatePublic(publicKeySpec);
 	}
 
 	/**
@@ -104,8 +70,6 @@ public class CryptMessage {
 			InvalidAlgorithmParameterException {
 
 		try {
-			String algorithm = "AES/CBC/PKCS5Padding";
-
 			SecretKey key = AESEncryption.generateKey(256);
 			IvParameterSpec iv = AESEncryption.generateIv();
 
@@ -125,37 +89,29 @@ public class CryptMessage {
 		}
 	}
 
-	public String recieveMessage(byte[] cipherBase, byte[] cipherMessage)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException {
-
-		String algorithm = "AES/CBC/PKCS5Padding";
-
-		String base = rsa.decrypt(cipherBase);
-
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < 44; i++) {
-			sb.append(base.charAt(i));
-		}
-		SecretKey key = new SecretKeySpec(
-				Base64.getDecoder().decode(sb.toString()), 0, 32, "AES");
-
-		sb.setLength(0);
-		for (int i = 44; i < 68; i++) {
-			sb.append(base.charAt(i));
-		}
-		IvParameterSpec iv = new IvParameterSpec(
-				Base64.getDecoder().decode(sb.toString()));
+	public String recieveMessage(byte[] cipherBase, byte[] cipherMessage) {
 
 		try {
-			return AESEncryption.decrypt(algorithm, cipherMessage, key,
-					iv);
+			String base = rsa.decrypt(cipherBase);
+
+			StringBuilder sb = new StringBuilder();
+
+			for (int i = 0; i < 44; i++) {
+				sb.append(base.charAt(i));
+			}
+			SecretKey key = new SecretKeySpec(
+					Base64.getDecoder().decode(sb.toString()), 0, 32, "AES");
+
+			sb.setLength(0);
+			for (int i = 44; i < 68; i++) {
+				sb.append(base.charAt(i));
+			}
+			IvParameterSpec iv = new IvParameterSpec(
+					Base64.getDecoder().decode(sb.toString()));
+			return AESEncryption.decrypt(algorithm, cipherMessage, key, iv);
 		} catch (InvalidKeyException | NoSuchPaddingException
 				| NoSuchAlgorithmException | InvalidAlgorithmParameterException
 				| BadPaddingException | IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -175,14 +131,15 @@ public class CryptMessage {
 	 * @throws InvalidAlgorithmParameterException
 	 */
 	public static String recieveMessage(byte[] cipherBase, byte[] cipherMessage,
-			PrivateKey priKey)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException {
+			PrivateKey priKey) throws InvalidKeyException {
 
-		String algorithm = "AES/CBC/PKCS5Padding";
-
-		String base = RSAEncryption.decrypt(cipherBase, priKey);
+		String base;
+		try {
+			base = RSAEncryption.decrypt(cipherBase, priKey);
+		} catch (IllegalBlockSizeException | BadPaddingException e) {
+			e.printStackTrace();
+			return "_RSAEncryption_failt_";
+		}
 
 		StringBuilder sb = new StringBuilder();
 
@@ -199,9 +156,14 @@ public class CryptMessage {
 		IvParameterSpec iv = new IvParameterSpec(
 				Base64.getDecoder().decode(sb.toString()));
 
-		String clearMsg = AESEncryption.decrypt(algorithm, cipherMessage, key,
-				iv);
-		return clearMsg;
+		try {
+			return AESEncryption.decrypt(algorithm, cipherMessage, key, iv);
+		} catch (NoSuchPaddingException
+				| NoSuchAlgorithmException | InvalidAlgorithmParameterException
+				| BadPaddingException | IllegalBlockSizeException e) {
+			e.printStackTrace();
+			return "_AESEncryption_fault_";
+		}
 	}
 
 	public static byte[][] sendFile(File file, PublicKey pubKey)
@@ -209,8 +171,6 @@ public class CryptMessage {
 			NoSuchPaddingException, IllegalBlockSizeException,
 			BadPaddingException, InvalidAlgorithmParameterException,
 			IOException {
-
-		String algorithm = "AES/CBC/PKCS5Padding";
 
 		SecretKey key = AESEncryption.generateKey(256);
 		IvParameterSpec iv = AESEncryption.generateIv();
@@ -236,8 +196,6 @@ public class CryptMessage {
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalBlockSizeException,
 			BadPaddingException, InvalidAlgorithmParameterException {
-
-		String algorithm = "AES/CBC/PKCS5Padding";
 
 		String base = RSAEncryption.decrypt(cipherBase, priKey);
 
