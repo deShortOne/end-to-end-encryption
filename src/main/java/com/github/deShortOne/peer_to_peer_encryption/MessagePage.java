@@ -76,10 +76,8 @@ public class MessagePage extends Application {
 		// should be passed in
 		try {
 			cm = new CryptMessage(new RSAEncryption(name, name, true));
-		} catch (InvalidKeyException | NoSuchAlgorithmException
-				| InvalidKeySpecException | NoSuchPaddingException
-				| IllegalBlockSizeException | BadPaddingException
-				| IOException e1) {
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| NoSuchPaddingException | IOException e1) {
 			e1.printStackTrace();
 		}
 
