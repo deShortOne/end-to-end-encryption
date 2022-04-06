@@ -61,13 +61,7 @@ public class ConnectionRecieve implements Runnable {
 		while (true) {
 			try {
 				byte[] base = getBytes(dis);
-				if (!base.equals(Connection.base)) {
-					System.out.println("Base bad");
-				}
 				byte[] cipherMessage = getBytes(dis);
-				if (!cipherMessage.equals(Connection.msg)) {
-					System.out.println("msg bad");
-				}
 				mp.recieveMessage(nameOfOther + ": "
 						+ cm.recieveMessage(base, cipherMessage));
 			} catch (SocketException e) {

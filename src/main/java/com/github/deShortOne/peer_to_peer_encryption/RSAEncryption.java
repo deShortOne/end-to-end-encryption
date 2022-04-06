@@ -104,10 +104,9 @@ public class RSAEncryption {
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 		return keyFactory.generatePublic(publicKeySpec);
 	}
-	
-	public static PrivateKey getCommonPrivateKey()
-			throws IOException, NoSuchAlgorithmException,
-			InvalidKeySpecException {
+
+	public static PrivateKey getCommonPrivateKey() throws IOException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		File privateKeyFile = new File(publicKeyFileLoc + ".prikey");
 		byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
 
@@ -187,6 +186,13 @@ public class RSAEncryption {
 				Base64.getDecoder()
 						.decode(cipherText.getBytes(StandardCharsets.UTF_8)),
 				privateKey);
+	}
+
+	public String decrypt(byte[] cipherText) throws InvalidKeyException,
+			NoSuchAlgorithmException, NoSuchPaddingException,
+			IllegalBlockSizeException, BadPaddingException {
+
+		return decrypt(cipherText, privateKey);
 	}
 
 	public static String decrypt(byte[] cipher, PrivateKey key)

@@ -50,7 +50,7 @@ public class CryptMessage {
 //			return null;
 //		}
 	}
-	
+
 	@Deprecated
 	private PrivateKey debugGetPrivate() {
 		try {
@@ -125,16 +125,36 @@ public class CryptMessage {
 		}
 	}
 
-	public String recieveMessage(byte[] base, byte[] cipherMessage)
+	public String recieveMessage(byte[] cipherBase, byte[] cipherMessage)
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalBlockSizeException,
 			BadPaddingException {
 
+		String algorithm = "AES/CBC/PKCS5Padding";
+
+		String base = rsa.decrypt(cipherBase);
+
+		StringBuilder sb = new StringBuilder();
+
+		for (int i = 0; i < 44; i++) {
+			sb.append(base.charAt(i));
+		}
+		SecretKey key = new SecretKeySpec(
+				Base64.getDecoder().decode(sb.toString()), 0, 32, "AES");
+
+		sb.setLength(0);
+		for (int i = 44; i < 68; i++) {
+			sb.append(base.charAt(i));
+		}
+		IvParameterSpec iv = new IvParameterSpec(
+				Base64.getDecoder().decode(sb.toString()));
+
 		try {
-			return recieveMessage(base, cipherMessage, rsa.getPrivateKey());
-		} catch (InvalidKeyException | NoSuchAlgorithmException
-				| NoSuchPaddingException | IllegalBlockSizeException
-				| BadPaddingException | InvalidAlgorithmParameterException e) {
+			return AESEncryption.decrypt(algorithm, cipherMessage, key,
+					iv);
+		} catch (InvalidKeyException | NoSuchPaddingException
+				| NoSuchAlgorithmException | InvalidAlgorithmParameterException
+				| BadPaddingException | IllegalBlockSizeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
