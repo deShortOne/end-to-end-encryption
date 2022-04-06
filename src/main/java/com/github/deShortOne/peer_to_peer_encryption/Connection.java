@@ -11,6 +11,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -83,33 +84,6 @@ public class Connection {
 
 	public void setPublicKey(PublicKey pubKey) {
 		this.pubKey = pubKey;
-		if (this.pubKey.getEncoded().equals(cm.getPublicKey())) {
-		} else {
-			// System.out.println("Bad pub key"); Comes up as not equal but...
-			// values are the same?
-			for (int i = 0; i < pubKey.getEncoded().length; i++)
-				if (cm.getPublicKey()[i] != pubKey.getEncoded()[i])
-					System.out.println(i + ") " + cm.getPublicKey()[i] + " -> "
-							+ pubKey.getEncoded()[i]);
-
-			// Test if pubkey is correct
-			// Only works if pubkey is common, which in this very specific case is
-			String msg = "ahioeqmsdoghamdsaf";
-			try {
-				byte[][] a = CryptMessage.sendMessage(msg, pubKey);
-				String msg2 = CryptMessage.recieveMessage(a[0], a[1], cm.debugGetPrivate());
-
-				System.out.println("Key is good - " + msg.equals(msg2));
-			} catch (InvalidKeyException | NoSuchPaddingException
-					| IllegalBlockSizeException | BadPaddingException
-					| InvalidAlgorithmParameterException
-					| NoSuchAlgorithmException e) {
-				e.printStackTrace();
-				System.out.println("Key ERROR");
-				return;
-			}
-
-		}
 	}
 
 	public void setup() {
@@ -160,7 +134,15 @@ public class Connection {
 
 	public void sendMessageEncrypted(String msg) throws IOException {
 		try {
-			byte[][] encryptedMessage = CryptMessage.sendMessage(msg, pubKey);
+			byte[][] encryptedMessage;
+			try {
+				encryptedMessage = CryptMessage.sendMessage(msg, RSAEncryption.getCommonKey());
+			} catch (NoSuchAlgorithmException | InvalidKeySpecException
+					| IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
 			base = encryptedMessage[0];
 			this.msg = encryptedMessage[1];
 

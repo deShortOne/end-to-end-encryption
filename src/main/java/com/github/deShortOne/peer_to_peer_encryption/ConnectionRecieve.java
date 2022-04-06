@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -67,7 +68,14 @@ public class ConnectionRecieve implements Runnable {
 				if (!cipherMessage.equals(Connection.msg)) {
 					System.out.println("msg bad");
 				}
-				mp.recieveMessage(nameOfOther + ": " + cm.recieveMessage(base, cipherMessage));
+				try {
+					mp.recieveMessage(nameOfOther + ": " + CryptMessage.recieveMessage(base, cipherMessage, RSAEncryption.getCommonPrivateKey()));
+				} catch (InvalidAlgorithmParameterException
+						| InvalidKeySpecException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					break;
+				}
 			} catch (SocketException e) {
 				System.err.println("Connection lost");
 				break;

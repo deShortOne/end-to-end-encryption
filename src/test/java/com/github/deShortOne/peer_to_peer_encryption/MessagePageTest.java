@@ -60,7 +60,7 @@ public class MessagePageTest {
 		Assertions.assertTrue(true);
 	}
 
-	@Test
+	// @Test
 	public void testSmallMessaging(FxRobot robot) {
 		robot.clickOn(per1SendBox).write("Hii!").clickOn(per1SendButton);
 		Assertions.assertEquals("", per1SendBox.getText());
@@ -86,7 +86,7 @@ public class MessagePageTest {
 	 * 
 	 * @param robot
 	 */
-	// @Test
+	@Test
 	public void testLargeMessaging(FxRobot robot) {
 		String tmpMsg = "abcdefghijklmnopqrstuvwxyz";
 		StringBuilder sb = new StringBuilder();
