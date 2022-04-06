@@ -135,14 +135,9 @@ public class Connection {
 	public void sendMessageEncrypted(String msg) throws IOException {
 		try {
 			byte[][] encryptedMessage;
-			try {
-				encryptedMessage = CryptMessage.sendMessage(msg, RSAEncryption.getCommonKey());
-			} catch (NoSuchAlgorithmException | InvalidKeySpecException
-					| IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
+
+			encryptedMessage = CryptMessage.sendMessage(msg, pubKey);
+			
 			base = encryptedMessage[0];
 			this.msg = encryptedMessage[1];
 

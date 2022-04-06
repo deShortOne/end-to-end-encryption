@@ -42,17 +42,17 @@ public class CryptMessage {
 	}
 
 	public byte[] getPublicKey() {
-//		return rsa.getPublicKey().getEncoded();
-		try {
-			return RSAEncryption.getCommonKey().getEncoded();
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException
-				| IOException e) {
-			return null;
-		}
+		return rsa.getPublicKey().getEncoded();
+//		try {
+//			return RSAEncryption.getCommonKey().getEncoded();
+//		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+//				| IOException e) {
+//			return null;
+//		}
 	}
 	
 	@Deprecated
-	public PrivateKey debugGetPrivate() {
+	private PrivateKey debugGetPrivate() {
 		try {
 			return RSAEncryption.getCommonPrivateKey();
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException
@@ -130,7 +130,15 @@ public class CryptMessage {
 			NoSuchPaddingException, IllegalBlockSizeException,
 			BadPaddingException {
 
-		return null;
+		try {
+			return recieveMessage(base, cipherMessage, rsa.getPrivateKey());
+		} catch (InvalidKeyException | NoSuchAlgorithmException
+				| NoSuchPaddingException | IllegalBlockSizeException
+				| BadPaddingException | InvalidAlgorithmParameterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**

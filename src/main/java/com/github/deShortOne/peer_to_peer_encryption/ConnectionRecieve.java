@@ -68,14 +68,8 @@ public class ConnectionRecieve implements Runnable {
 				if (!cipherMessage.equals(Connection.msg)) {
 					System.out.println("msg bad");
 				}
-				try {
-					mp.recieveMessage(nameOfOther + ": " + CryptMessage.recieveMessage(base, cipherMessage, RSAEncryption.getCommonPrivateKey()));
-				} catch (InvalidAlgorithmParameterException
-						| InvalidKeySpecException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					break;
-				}
+				mp.recieveMessage(nameOfOther + ": "
+						+ cm.recieveMessage(base, cipherMessage));
 			} catch (SocketException e) {
 				System.err.println("Connection lost");
 				break;
