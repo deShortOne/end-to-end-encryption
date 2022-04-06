@@ -8,6 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.crypto.NoSuchPaddingException;
 
@@ -110,7 +112,12 @@ public class StartScreen {
 					moveToNextWindow();
 					outputMsg.setText("Sign up success!");
 				} else {
-					outputMsg.setText("Username already taken");
+					if (blankInput(usernameInput.getText())) 
+						outputMsg.setText("Username cannot be empty");
+					else if (blankInput(passwordInput.getText())) 
+						outputMsg.setText("Password cannot be empty");
+					else
+						outputMsg.setText("Username already taken");
 				}
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException
 					| IOException | NoSuchPaddingException e1) {
@@ -162,6 +169,9 @@ public class StartScreen {
 			String password) throws NoSuchAlgorithmException,
 			FileNotFoundException, InvalidKeySpecException, IOException {
 
+		if (blankInput(username) || blankInput(password))
+			return false;
+		
 		String hashUsername = calculateUsernameHash(username);
 		if (checkForDuplicate(hashUsername))
 			return false;
@@ -255,5 +265,15 @@ public class StartScreen {
 		}
 
 		return sb.toString();
+	}
+
+	private static boolean blankInput(String input) {
+		if (input.equals(""))
+			return true;
+
+		Pattern pattern = Pattern.compile("\\s+");
+		Matcher matcher = pattern.matcher(input);
+
+		return matcher.matches();
 	}
 }

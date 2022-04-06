@@ -49,6 +49,7 @@ public class StartScreenTest {
 			e.printStackTrace();
 			return;
 		}
+		setVariousNodes();
 	}
 
 	// Checks if file is created
@@ -66,7 +67,6 @@ public class StartScreenTest {
 		Assertions.assertFalse(pubFile.isFile());
 		Assertions.assertFalse(priFile.isFile());
 		
-		setVariousNodes();
 		resetAccountsCSV();
 
 		robot.doubleClickOn(usernameInput).write(username);
@@ -81,8 +81,6 @@ public class StartScreenTest {
 	@Test
 	public void buttonsAreCorrectAndLoggingInSigningIn(FxRobot robot)
 			throws IOException, InterruptedException {
-
-		setVariousNodes();
 
 		// Switching text
 		robot.clickOn(signup);
@@ -126,7 +124,25 @@ public class StartScreenTest {
 		Assertions.assertEquals("Username or password incorrect",
 				outputMsg.getText());
 	}
-
+	
+	@Test
+	public void emptyUsernameOrPassword(FxRobot robot) {
+		robot.clickOn(signup);
+		Assertions.assertEquals("Username cannot be empty", outputMsg.getText());
+		
+		robot.doubleClickOn(usernameInput).write("A").clickOn(signup);
+		Assertions.assertEquals("Password cannot be empty", outputMsg.getText());
+		robot.doubleClickOn(passwordInput).write(" ").clickOn(signup); //Space
+		Assertions.assertEquals("Password cannot be empty", outputMsg.getText());
+		
+		
+		robot.doubleClickOn(usernameInput).write(" 		 "); //Space tab tab space
+		robot.doubleClickOn(passwordInput).write("");
+		robot.clickOn(signup);
+		Assertions.assertEquals("Username cannot be empty", outputMsg.getText());
+	
+	}
+	
 	@Test
 	public void checkUsernameAndPassword() throws IOException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
