@@ -25,34 +25,34 @@ public class CryptMessageTest {
 
 	HashMap<String, PublicKey> friendsList = new HashMap<>();
 
-	//@Test
+	@Test
 	public void sendMessage_onePerson()
 			throws InvalidKeyException, NoSuchAlgorithmException,
 			NoSuchPaddingException, IllegalBlockSizeException,
 			BadPaddingException, FileNotFoundException, InvalidKeySpecException,
 			IOException, InvalidAlgorithmParameterException {
 		RSAEncryption friend1 = new RSAEncryption("", "", true);
-		// friendsList.get("friend1.pub");
+		
+		CryptMessage cm = new CryptMessage(friend1);
 
 		String msg = "HI";
-		byte[][] sentMessage = CryptMessage.sendMessage(msg,
-				friend1.getPublicKey());
-		String recievedMessage = CryptMessage.recieveMessage(sentMessage[0],
-				sentMessage[1], friend1.getPrivateKey());
+		byte[][] sentMessage = CryptMessage.sendMessage(msg, friend1.getPublicKey());
+		String recievedMessage = cm.recieveMessage(sentMessage[0],
+				sentMessage[1]);
 
 		Assertions.assertEquals(msg, recievedMessage);
 	}
 	
-	@Test
+	// @Test
 	public void makeFriends()
 			throws InvalidKeyException, NoSuchAlgorithmException, FileNotFoundException, InvalidKeySpecException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, IOException {
 		// Create new RSA
-		RSAEncryption per1 = new RSAEncryption("per1", "AA", true); 
-		RSAEncryption per2 = new RSAEncryption("per2", "BB", true);
-		
-		// Load profiles
-		CryptMessage p1 = new CryptMessage(new RSAEncryption("per1", "AA", false));
-		CryptMessage p2 = new CryptMessage(new RSAEncryption("per2", "AA", false));
+//		RSAEncryption per1 = new RSAEncryption("per1", "AA", true); 
+//		RSAEncryption per2 = new RSAEncryption("per2", "BB", true);
+//		
+//		// Load profiles
+//		CryptMessage p1 = new CryptMessage(new RSAEncryption("per1", "AA", false));
+//		CryptMessage p2 = new CryptMessage(new RSAEncryption("per2", "AA", false));
 		
 		// p1 wants to make friends with p2
 		

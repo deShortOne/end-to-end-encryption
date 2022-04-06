@@ -5,13 +5,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import com.opencsv.CSVReader;
@@ -84,9 +81,7 @@ public class StartScreen {
 					outputMsg.setText("Success!");
 					moveToNextWindow();
 				} catch (NoSuchAlgorithmException | InvalidKeySpecException
-						| IOException | InvalidKeyException
-						| NoSuchPaddingException | IllegalBlockSizeException
-						| BadPaddingException e1) {
+						| IOException | NoSuchPaddingException e1) {
 					e1.printStackTrace();
 					outputMsg.setText("RSA Encryption error!");
 				}
@@ -118,8 +113,7 @@ public class StartScreen {
 					outputMsg.setText("Username already taken");
 				}
 			} catch (NoSuchAlgorithmException | InvalidKeySpecException
-					| IOException | InvalidKeyException | NoSuchPaddingException
-					| IllegalBlockSizeException | BadPaddingException e1) {
+					| IOException | NoSuchPaddingException e1) {
 				e1.printStackTrace();
 				outputMsg.setText("Critical error");
 			}
@@ -128,10 +122,10 @@ public class StartScreen {
 
 		return grid;
 	}
-	
+
 	public static void moveToNextWindow() {
 		CryptMessage cm = new CryptMessage(rsaEncryption);
-		
+		cm.getClass();
 	}
 
 	public static boolean loginUsernameAndPassword(String username,

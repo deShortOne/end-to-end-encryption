@@ -9,9 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -28,9 +26,6 @@ public class Connection {
 	private MessagePage mp;
 
 	private PublicKey pubKey;
-
-	static byte[] base;
-	static byte[] msg;
 
 	/**
 	 * Server port number. Only specific server.
@@ -138,9 +133,6 @@ public class Connection {
 
 			encryptedMessage = CryptMessage.sendMessage(msg, pubKey);
 			
-			base = encryptedMessage[0];
-			this.msg = encryptedMessage[1];
-
 			sendMessage(encryptedMessage[0]);
 			sendMessage(encryptedMessage[1]);
 		} catch (InvalidKeyException | NoSuchPaddingException
@@ -148,7 +140,6 @@ public class Connection {
 				| InvalidAlgorithmParameterException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private void sendMessage(byte[] msg) throws IOException {

@@ -19,11 +19,11 @@ import org.junit.jupiter.api.Test;
 public class RSAEncryptionTest {
 
 	@Test
-	public void testEncryption_OneUser() throws NoSuchAlgorithmException,
-			FileNotFoundException, InvalidKeySpecException, IOException,
-			InvalidKeyException, NoSuchPaddingException,
+	public void testEncryption_OneUser()
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeySpecException, IOException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException {
-		RSAEncryption p1 = new RSAEncryption("", "", true);
+		RSAEncryption p1 = new RSAEncryption("oneUser", "", true);
 
 		String msg = "WeatherIsMostlysUNNY";
 		String cipher = p1.encrypt(msg);
@@ -32,12 +32,12 @@ public class RSAEncryptionTest {
 		Assertions.assertEquals(msg, msg2);
 	}
 
-	// @Test
-	public void testEncryption_OneUser_File() throws NoSuchAlgorithmException,
-			FileNotFoundException, InvalidKeySpecException, IOException,
-			InvalidKeyException, NoSuchPaddingException,
+	@Test
+	public void testEncryption_OneUser_File()
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeySpecException, IOException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException {
-		RSAEncryption p1 = new RSAEncryption("", "", true);
+		RSAEncryption p1 = new RSAEncryption("OneUserFile", "", true);
 
 		String fileLocation = "dummy_files/";
 
@@ -51,37 +51,38 @@ public class RSAEncryptionTest {
 		assertThat(inputFile).hasSameTextualContentAs(decryptedFile);
 	}
 
-	// @Test
-	public void testStoringPublicPrivateKey() throws NoSuchAlgorithmException,
-			FileNotFoundException, InvalidKeySpecException, IOException,
-			InvalidKeyException, NoSuchPaddingException,
+	@Test
+	public void testStoringPublicPrivateKey()
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeySpecException, IOException, InvalidKeyException,
 			IllegalBlockSizeException, BadPaddingException {
-		RSAEncryption p1 = new RSAEncryption("Test", "Test", true);
+		RSAEncryption p1 = new RSAEncryption("storingPubPri", "Test", true);
 
 		String msg = "WeatherIsMostlysUNNY";
 		String cipher = p1.encrypt(msg);
 
-		RSAEncryption p2 = new RSAEncryption("Test", "Test", false);
+		RSAEncryption p2 = new RSAEncryption("storingPubPri", "Test", false);
 		String msg2 = p2.decrypt(cipher);
 
 		Assertions.assertEquals(msg, msg2);
 
-		Assertions.assertTrue(new File("public_keys\\Test.pubkey").isFile());
-		Assertions.assertTrue(new File("public_keys\\Test.prikey").isFile());
+		Assertions.assertTrue(
+				new File("public_keys\\storingPubPri.pubkey").isFile());
+		Assertions.assertTrue(
+				new File("public_keys\\storingPubPri.prikey").isFile());
 	}
 
 	@Test
 	public void testEncryption_ImitateMultipleUsers()
-			throws NoSuchAlgorithmException, FileNotFoundException,
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
 			InvalidKeySpecException, IOException, InvalidKeyException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException {
-		RSAEncryption p1 = new RSAEncryption("", "", true);
+			IllegalBlockSizeException, BadPaddingException {
+		RSAEncryption p1 = new RSAEncryption("imitateMulti", "asdf", true);
 
 		String msg = "WeatherIsMostlysUNNY";
 
-		byte[] cipher = RSAEncryption.encrypt(msg, p1.getPublicKey());
-		String msg2 = RSAEncryption.decrypt(cipher, p1.getPrivateKey());
+		String cipher = p1.encrypt(msg);
+		String msg2 = p1.decrypt(cipher);
 
 		Assertions.assertEquals(msg, msg2);
 	}

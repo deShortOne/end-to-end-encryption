@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -38,16 +37,21 @@ public class RSAEncryption {
 
 	private String password;
 
+	private static Cipher cipher;
+	private static KeyFactory keyFactory;
+
 	/*
 	 * Should throw all to simplify matters a little
 	 */
 	public RSAEncryption(String username, String password, boolean newKeys)
-			throws NoSuchAlgorithmException, FileNotFoundException,
-			InvalidKeySpecException, IOException, InvalidKeyException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException {
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			IOException, InvalidKeySpecException {
 		this.username = username;
 		this.password = password;
+
+		RSAEncryption.cipher = Cipher.getInstance("RSA");
+		RSAEncryption.keyFactory = KeyFactory.getInstance("RSA");
+
 		if (newKeys)
 			generateKeys();
 		else {
@@ -63,8 +67,7 @@ public class RSAEncryption {
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 */
-	public void generateKeys() throws NoSuchAlgorithmException,
-			FileNotFoundException, IOException, InvalidKeySpecException {
+	public void generateKeys() throws NoSuchAlgorithmException, IOException {
 		KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
 		generator.initialize(2048);
 		KeyPair pair = generator.generateKeyPair();
@@ -74,43 +77,70 @@ public class RSAEncryption {
 		try (FileOutputStream fos = new FileOutputStream(
 				publicKeyFileLoc + username + ".pubkey")) {
 			fos.write(publicKey.getEncoded());
+		} catch (FileNotFoundException e) {
+			File tmpFolder = new File(publicKeyFileLoc);
+			if (!tmpFolder.exists()) {
+				tmpFolder.mkdir();
+			}
+
+			File tmp = new File(publicKeyFileLoc + username + ".pubkey");
+			tmp.createNewFile();
+
+			FileOutputStream fos = new FileOutputStream(
+					publicKeyFileLoc + username + ".pubkey");
+
+			fos.write(publicKey.getEncoded());
+			fos.close();
 		}
 
 		// FIXME be encrypted with users password
 		try (FileOutputStream fos = new FileOutputStream(
 				publicKeyFileLoc + username + ".prikey")) {
 			fos.write(privateKey.getEncoded());
+		} catch (FileNotFoundException e) {
+			File tmp = new File(publicKeyFileLoc + username + ".prikey");
+			tmp.createNewFile();
+
+			FileOutputStream fos = new FileOutputStream(
+					publicKeyFileLoc + username + ".prikey");
+
+			fos.write(privateKey.getEncoded());
+			fos.close();
 		}
 	}
 
 	/**
-	 * 
-	 * FIXME: private key needs to be encrypted somehow
+	 * Should be used for debug only.
 	 * 
 	 * @return
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
 	 */
-	public String[] getPublicKeys() {
-		String[] out = new String[2];
-
-		return out;
-	}
-
+	@Deprecated
 	public static PublicKey getCommonKey() throws IOException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		File publicKeyFile = new File(publicKeyFileLoc + ".pubkey");
 		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
 
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 		return keyFactory.generatePublic(publicKeySpec);
 	}
 
-	public static PrivateKey getCommonPrivateKey() throws IOException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
+	/**
+	 * Should be used for debug only.
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 */
+	@Deprecated
+	public static PrivateKey getCommonPrivateKey()
+			throws IOException, InvalidKeySpecException {
 		File privateKeyFile = new File(publicKeyFileLoc + ".prikey");
 		byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
 
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
 				privateKeyBytes);
 		return keyFactory.generatePrivate(privateKeySpec);
@@ -118,21 +148,19 @@ public class RSAEncryption {
 
 	public static PublicKey createPublicKey(byte[] publicKeyBytes)
 			throws InvalidKeySpecException {
-		KeyFactory keyFactory;
-		try {
-			keyFactory = KeyFactory.getInstance("RSA");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			return null;
-		}
 
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 		return keyFactory.generatePublic(publicKeySpec);
 	}
 
-	public void getKeys() throws IOException, InvalidKeySpecException,
-			NoSuchAlgorithmException {
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+	/**
+	 * Get personal keys from file.
+	 * 
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException
+	 */
+	public void getKeys() throws IOException, InvalidKeySpecException {
 
 		File publicKeyFile = new File(publicKeyFileLoc + username + ".pubkey");
 		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
@@ -148,38 +176,40 @@ public class RSAEncryption {
 		privateKey = keyFactory.generatePrivate(privateKeySpec);
 	}
 
-	public void getPublicKeyFromFile() throws IOException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
-		File publicKeyFile = new File(publicKeyFileLoc + "public.key");
+	/**
+	 * Get public key from file, for contacts.
+	 * 
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 */
+	public void getPublicKeyFromFile(String name)
+			throws IOException, InvalidKeySpecException {
+		File publicKeyFile = new File(publicKeyFileLoc + name + ".pubkey");
 		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
 
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
 		publicKey = keyFactory.generatePublic(publicKeySpec);
 	}
 
 	public String encrypt(String clearText) throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
 		return Base64.getEncoder()
 				.encodeToString(encrypt(clearText, publicKey));
 	}
 
 	public static byte[] encrypt(String clearText, PublicKey key)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
+			throws InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException {
-		Cipher encryptCipher = Cipher.getInstance("RSA");
-		encryptCipher.init(Cipher.ENCRYPT_MODE, key);
+
+		cipher.init(Cipher.ENCRYPT_MODE, key);
 
 		byte[] secretMessageBytes = clearText.getBytes(StandardCharsets.UTF_8);
-		byte[] encryptedMessageBytes = encryptCipher
-				.doFinal(secretMessageBytes);
+		byte[] encryptedMessageBytes = cipher.doFinal(secretMessageBytes);
 		return encryptedMessageBytes;
 	}
 
 	public String decrypt(String cipherText) throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
 
 		return decrypt(
@@ -189,20 +219,17 @@ public class RSAEncryption {
 	}
 
 	public String decrypt(byte[] cipherText) throws InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchPaddingException,
 			IllegalBlockSizeException, BadPaddingException {
-
 		return decrypt(cipherText, privateKey);
 	}
 
-	public static String decrypt(byte[] cipher, PrivateKey key)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
+	public static String decrypt(byte[] cipherText, PrivateKey key)
+			throws InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException {
-		Cipher decryptCipher = Cipher.getInstance("RSA");
-		decryptCipher.init(Cipher.DECRYPT_MODE, key);
 
-		byte[] decryptedMessageBytes = decryptCipher.doFinal(cipher);
+		cipher.init(Cipher.DECRYPT_MODE, key);
+
+		byte[] decryptedMessageBytes = cipher.doFinal(cipherText);
 		String decryptedMessage = new String(decryptedMessageBytes,
 				StandardCharsets.UTF_8);
 		return decryptedMessage;
@@ -221,14 +248,12 @@ public class RSAEncryption {
 	 * @throws IllegalBlockSizeException
 	 */
 	public void encryptFile(File input, File output)
-			throws IOException, NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException,
-			IllegalBlockSizeException, BadPaddingException {
+			throws IOException, InvalidKeyException, IllegalBlockSizeException,
+			BadPaddingException {
 		byte[] fileBytes = Files.readAllBytes(input.toPath());
 
-		Cipher encryptCipher = Cipher.getInstance("RSA");
-		encryptCipher.init(Cipher.ENCRYPT_MODE, publicKey);
-		byte[] encryptedFileBytes = encryptCipher.doFinal(fileBytes);
+		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+		byte[] encryptedFileBytes = cipher.doFinal(fileBytes);
 
 		try (FileOutputStream stream = new FileOutputStream(output)) {
 			stream.write(encryptedFileBytes);
@@ -236,14 +261,12 @@ public class RSAEncryption {
 	}
 
 	public void decryptFile(File input, File output)
-			throws IOException, NoSuchAlgorithmException,
-			NoSuchPaddingException, InvalidKeyException,
-			IllegalBlockSizeException, BadPaddingException {
+			throws IOException, InvalidKeyException, IllegalBlockSizeException,
+			BadPaddingException {
 		byte[] encryptedFileBytes = Files.readAllBytes(input.toPath());
-		Cipher decryptCipher = Cipher.getInstance("RSA");
 
-		decryptCipher.init(Cipher.DECRYPT_MODE, privateKey);
-		byte[] decryptedFileBytes = decryptCipher.doFinal(encryptedFileBytes);
+		cipher.init(Cipher.DECRYPT_MODE, privateKey);
+		byte[] decryptedFileBytes = cipher.doFinal(encryptedFileBytes);
 
 		try (FileOutputStream stream = new FileOutputStream(output)) {
 			stream.write(decryptedFileBytes);
@@ -251,8 +274,6 @@ public class RSAEncryption {
 	}
 
 	/**
-	 * DEBUG. Shouldn't normally call a method that isn't usually called in the
-	 * normal use of the application
 	 * 
 	 * FIXME: Should this ever return public key or only byte[]
 	 * 
@@ -262,8 +283,4 @@ public class RSAEncryption {
 		return publicKey;
 	}
 
-	@Deprecated
-	public PrivateKey getPrivateKey() {
-		return privateKey;
-	}
 }

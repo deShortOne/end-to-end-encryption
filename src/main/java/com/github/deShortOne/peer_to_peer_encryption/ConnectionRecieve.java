@@ -6,15 +6,8 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 public class ConnectionRecieve implements Runnable {
 
@@ -46,7 +39,6 @@ public class ConnectionRecieve implements Runnable {
 		try {
 			nameOfOther = getMessageClear(dis);
 			connection.setPublicKey(getPublicKey(dis));
-			System.out.println("Key created");
 		} catch (SocketException e1) {
 			System.err.println("Connection lost");
 			return;
@@ -69,11 +61,6 @@ public class ConnectionRecieve implements Runnable {
 				break;
 			} catch (IOException e1) {
 				e1.printStackTrace();
-				break;
-			} catch (InvalidKeyException | NoSuchAlgorithmException
-					| NoSuchPaddingException | IllegalBlockSizeException
-					| BadPaddingException e2) {
-				e2.printStackTrace();
 				break;
 			}
 		}
