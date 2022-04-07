@@ -26,6 +26,8 @@ public class Connection {
 	private MessagePage mp;
 
 	private PublicKey pubKey;
+	
+	private ConnectionRecieve rm;
 
 	/**
 	 * Server port number. Only specific server.
@@ -79,6 +81,7 @@ public class Connection {
 
 	public void setPublicKey(PublicKey pubKey) {
 		this.pubKey = pubKey;
+		mp.addConnection(rm.getName());
 	}
 
 	public void setup() {
@@ -105,7 +108,7 @@ public class Connection {
 	}
 
 	private void setUpReciever() {
-		ConnectionRecieve rm = new ConnectionRecieve(this, socket, mp, cm);
+		rm = new ConnectionRecieve(this, socket, mp, cm);
 		Thread t = new Thread(rm);
 		t.start();
 	}

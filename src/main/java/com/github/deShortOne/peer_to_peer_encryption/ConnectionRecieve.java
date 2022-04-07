@@ -65,6 +65,10 @@ public class ConnectionRecieve implements Runnable {
 			}
 		}
 	}
+	
+	public String getName() {
+		return nameOfOther;
+	}
 
 	private PublicKey getPublicKey(DataInputStream dis)
 			throws IOException, InvalidKeySpecException {

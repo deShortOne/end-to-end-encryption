@@ -10,9 +10,11 @@ import java.util.regex.Matcher;
 import javax.crypto.NoSuchPaddingException;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextArea;
@@ -25,11 +27,14 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.util.HashMap;
 import java.util.Random;
 
 public class MessagePage extends Application {
 
-	private Connection c;
+	private Connection newConnection;
+
+	private Connection currConnection;
 
 	private TextField output;
 
@@ -48,6 +53,13 @@ public class MessagePage extends Application {
 	 * Testing. username of self.
 	 */
 	private String name = fakeNames[rand.nextInt(10)];
+
+	/**
+	 * HashMap<name, connection to that person>
+	 */
+	private HashMap<String, Connection> connections = new HashMap<>();
+
+	private VBox contactsListRoot;
 
 	/**
 	 * Testing
@@ -98,7 +110,7 @@ public class MessagePage extends Application {
 		stage.setTitle(name);
 
 		try {
-			c = new Connection(this, cm);
+			newConnection = new Connection(this, cm);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -129,7 +141,7 @@ public class MessagePage extends Application {
 		primaryStage.setTitle(name);
 
 		try {
-			c = new Connection(this, cm);
+			newConnection = new Connection(this, cm);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -139,15 +151,24 @@ public class MessagePage extends Application {
 		launch(args);
 	}
 
-	private Parent setupPage() {
-		BorderPane root = new BorderPane();
-		root.setId("root");
-		root.setCenter(messageWindow());
-		return root;
+	/**
+	 * 
+	 * @param name
+	 */
+	public void addConnection(String name) {
+		connections.put(name, newConnection);
+		Platform.runLater(() -> {
+			addContact(name);
+		});
+		setCurrContact(name);
+		try {
+			newConnection = new Connection(this, cm);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void recieveMessage(String msg) {
-//		if (msg.split(": ").length != 1)
 		inputoutput.appendText(msg + "\n");
 	}
 
@@ -161,6 +182,14 @@ public class MessagePage extends Application {
 
 	public byte[] getPublicKey() {
 		return cm.getPublicKey();
+	}
+
+	private Parent setupPage() {
+		BorderPane root = new BorderPane();
+		root.setId("root");
+		root.setCenter(messageWindow());
+		root.setLeft(contactsList());
+		return root;
 	}
 
 	private Parent messageWindow() {
@@ -217,8 +246,27 @@ public class MessagePage extends Application {
 		Matcher matcher = pattern.matcher(msg);
 
 		if (!matcher.matches()) {
-			c.sendMessageEncrypted(msg);
+			currConnection.sendMessageEncrypted(msg);
 			recieveMessage("You: " + msg);
 		}
+	}
+
+	private Parent contactsList() {
+		contactsListRoot = new VBox();
+		Label l = new Label("Contacts    ");
+		contactsListRoot.getChildren().add(l);
+		return contactsListRoot;
+	}
+
+	private void addContact(String name) {
+		Button b = new Button(name);
+		b.setOnAction(e -> {
+			setCurrContact(name);
+		});
+		contactsListRoot.getChildren().add(b);
+	}
+
+	private void setCurrContact(String name) {
+		currConnection = connections.get(name);
 	}
 }
