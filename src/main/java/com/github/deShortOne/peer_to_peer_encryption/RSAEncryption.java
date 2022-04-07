@@ -7,17 +7,21 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Base64.Encoder;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -198,13 +202,18 @@ public class RSAEncryption {
 				.encodeToString(encrypt(clearText, publicKey));
 	}
 
-	public static byte[] encrypt(String clearText, PublicKey key)
+	public static byte[] encrypt(String clearText, Key key)
 			throws InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException {
+		return encrypt(clearText.getBytes(StandardCharsets.UTF_8), key);
+	}
 
+	private static byte[] encrypt(byte[] clearText, Key key)
+			throws InvalidKeyException, IllegalBlockSizeException,
+			BadPaddingException {
 		cipher.init(Cipher.ENCRYPT_MODE, key);
 
-		byte[] secretMessageBytes = clearText.getBytes(StandardCharsets.UTF_8);
+		byte[] secretMessageBytes = clearText;
 		byte[] encryptedMessageBytes = cipher.doFinal(secretMessageBytes);
 		return encryptedMessageBytes;
 	}
@@ -223,7 +232,7 @@ public class RSAEncryption {
 		return decrypt(cipherText, privateKey);
 	}
 
-	public static String decrypt(byte[] cipherText, PrivateKey key)
+	public static String decrypt(byte[] cipherText, Key key)
 			throws InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException {
 
@@ -233,6 +242,38 @@ public class RSAEncryption {
 		String decryptedMessage = new String(decryptedMessageBytes,
 				StandardCharsets.UTF_8);
 		return decryptedMessage;
+	}
+
+	public byte[] signMessage(String msg, PublicKey key)
+			throws InvalidKeyException, IllegalBlockSizeException,
+			BadPaddingException, NoSuchAlgorithmException, SignatureException {
+
+		return signMessage(msg.getBytes(StandardCharsets.UTF_8), key);
+	}
+
+	public byte[] signMessage(byte[] clearText, PublicKey key)
+			throws InvalidKeyException, IllegalBlockSizeException,
+			BadPaddingException, NoSuchAlgorithmException, SignatureException {
+
+		Signature sig = Signature.getInstance("SHA1WithRSA");
+		sig.initSign(privateKey);
+		sig.update(clearText);
+		byte[] signatureBytes = sig.sign();
+		
+		sig.initVerify(publicKey);
+        sig.update(clearText);
+
+		return signatureBytes;
+	}
+
+	public boolean verifyMessage(byte[] clearText, PublicKey key, byte[] msg)
+			throws InvalidKeyException, IllegalBlockSizeException,
+			BadPaddingException, SignatureException, NoSuchAlgorithmException {
+		Signature sig = Signature.getInstance("SHA1WithRSA");
+		sig.initVerify(key);
+        sig.update(msg);
+
+		return sig.verify(clearText);
 	}
 
 	/**
