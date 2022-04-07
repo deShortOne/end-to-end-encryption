@@ -3,9 +3,6 @@ package com.github.deShortOne.peer_to_peer_encryption;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -15,102 +12,44 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import javafx.scene.control.TextArea;
+
 public class Connection {
 
 	private Socket socket;
-	private ServerSocket server;
-	private int port = 8080;
+	
 	private CryptMessage cm;
 	private DataOutputStream output;
 
 	private MessagePage mp;
 
 	private PublicKey pubKey;
-
-	/**
-	 * Server port number. Only specific server.
-	 * 
-	 * @param port
-	 * @throws IOException end
-	 */
-	public Connection(int port, MessagePage mp, CryptMessage cm)
-			throws IOException {
-		server = new ServerSocket(port);
+	
+	private ConnectionRecieve rm;
+	
+	private TextArea inputoutput;
+	
+	public Connection(MessagePage mp, CryptMessage cm, Socket socket) {
 		this.mp = mp;
 		this.cm = cm;
-		System.out.println("I'm a server");
-
-		setup();
-	}
-
-	// Client
-	public Connection(InetAddress toAddress, MessagePage mp, CryptMessage cm)
-			throws IOException {
-		this(toAddress, 8080, mp, cm);
-	}
-
-	// Client - end
-	public Connection(InetAddress toAddress, int port, MessagePage mp,
-			CryptMessage cm) throws IOException {
-		socket = new Socket(toAddress, port);
-		this.mp = mp;
-		this.cm = cm;
-		System.out.println("I'm the client");
-		setup();
-	}
-
-	/**
-	 * Attempts to create server
-	 * 
-	 * @throws IOException
-	 */
-	public Connection(MessagePage mp, CryptMessage cm) throws IOException {
-		try {
-			server = new ServerSocket(port);
-			System.out.println("I'm a server");
-		} catch (BindException e) {
-			socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
-			System.out.println("I'm the client");
-		}
-		this.mp = mp;
-		this.cm = cm;
-		setup();
+		this.socket = socket;
+		inputoutput = new TextArea();
+		inputoutput.setEditable(false);
+		inputoutput.setWrapText(true);
 	}
 
 	public void setPublicKey(PublicKey pubKey) {
 		this.pubKey = pubKey;
+		mp.addConnection(rm.getName(), this); // Now handled in KnockKnock
 	}
 
-	public void setup() {
-		if (isServer()) {
-			new Thread() {
-				public void run() {
-					try {
-						mp.setErrorMsg("Not connected to client");
-						socket = server.accept();
-						setUpSender();
-						setUpReciever();
-						mp.setErrorMsg("");
-					} catch (IOException e) {
-
-					}
-				}
-			}.start();
-
-		} else {
-			setUpReciever();
-			setUpSender();
-			mp.setErrorMsg("");
-		}
-	}
-
-	private void setUpReciever() {
-		ConnectionRecieve rm = new ConnectionRecieve(this, socket, mp, cm);
+	protected void setUpReciever() {
+		rm = new ConnectionRecieve(this, socket, mp, cm);
 		Thread t = new Thread(rm);
 		t.start();
 	}
 
-	private void setUpSender() {
+	protected void setUpSender() {
 		try {
 			OutputStream output = socket.getOutputStream();
 			this.output = new DataOutputStream(output);
@@ -141,15 +80,19 @@ public class Connection {
 			e.printStackTrace();
 		}
 	}
+	
+	public void recieveMessage(String msg) {
+		inputoutput.appendText(msg + "\n");
+	}
+	
+	public TextArea getMsgWindow() {
+		return inputoutput;
+	}
 
 	private void sendMessage(byte[] msg) throws IOException {
 		if (output != null) {
 			output.writeInt(msg.length);
 			output.write(msg);
 		}
-	}
-
-	private boolean isServer() {
-		return server != null;
 	}
 }

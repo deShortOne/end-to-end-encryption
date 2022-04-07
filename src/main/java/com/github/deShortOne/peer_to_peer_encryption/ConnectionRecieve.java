@@ -49,12 +49,11 @@ public class ConnectionRecieve implements Runnable {
 			System.err.println("Invalid key");
 			return;
 		}
-
 		while (true) {
 			try {
 				byte[] base = getBytes(dis);
 				byte[] cipherMessage = getBytes(dis);
-				mp.recieveMessage(nameOfOther + ": "
+				connection.recieveMessage(nameOfOther + ": "
 						+ cm.recieveMessage(base, cipherMessage));
 			} catch (SocketException e) {
 				System.err.println("Connection lost");
@@ -64,6 +63,10 @@ public class ConnectionRecieve implements Runnable {
 				break;
 			}
 		}
+	}
+	
+	public String getName() {
+		return nameOfOther;
 	}
 
 	private PublicKey getPublicKey(DataInputStream dis)
@@ -76,6 +79,7 @@ public class ConnectionRecieve implements Runnable {
 	}
 
 	private byte[] getBytes(DataInputStream dis) throws IOException {
+
 		int lengthOfMessage = dis.readInt();
 
 		byte[] arr = new byte[lengthOfMessage];
