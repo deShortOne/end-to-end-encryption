@@ -26,42 +26,29 @@ public class KnockKnock {
 		} catch (BindException e) {
 			socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
 			System.out.println("I'm the client");
+			setClient();
 		}
 	}
 
-	public void setServer() {
+	protected void setServer() {
 		mp.setErrorMsg("Not connected to client");
 
 		new Thread() {
 			public void run() {
 				while (true) {
-					Thread t = new Thread() {
-						public void run() {
-							try {
-								socket = server.accept();
-								ServerConnection sc = new ServerConnection(mp,
-										cm, socket);
-								mp.addConnection(mp.getName(), sc);
-								mp.setErrorMsg("");
-							} catch (IOException e) {
-
-							}
-						}
-					};
-					t.start();
 					try {
-						t.join();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						break;
+						socket = server.accept();
+						new ServerConnection(mp, cm, socket);
+						mp.setErrorMsg("");
+					} catch (IOException e) {
+
 					}
 				}
 			}
 		}.start();
 	}
 
-	public void setClient() {
-		ClientConnection cc = new ClientConnection(mp, cm, socket);
-		mp.addConnection(mp.getName(), cc);
+	protected void setClient() {
+		new ClientConnection(mp, cm, socket);
 	}
 }

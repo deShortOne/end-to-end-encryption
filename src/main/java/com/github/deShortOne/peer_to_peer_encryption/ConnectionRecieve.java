@@ -49,7 +49,6 @@ public class ConnectionRecieve implements Runnable {
 			System.err.println("Invalid key");
 			return;
 		}
-
 		while (true) {
 			try {
 				byte[] base = getBytes(dis);
@@ -80,6 +79,7 @@ public class ConnectionRecieve implements Runnable {
 	}
 
 	private byte[] getBytes(DataInputStream dis) throws IOException {
+
 		int lengthOfMessage = dis.readInt();
 
 		byte[] arr = new byte[lengthOfMessage];

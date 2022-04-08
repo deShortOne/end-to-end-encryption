@@ -134,7 +134,6 @@ public class MessagePage extends Application {
 		primaryStage.setTitle(name);
 		try {
 			newConnections = new KnockKnock(this, cm);
-			System.out.println("ASDF");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

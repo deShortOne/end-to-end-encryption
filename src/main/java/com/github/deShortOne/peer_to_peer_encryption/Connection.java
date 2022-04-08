@@ -33,7 +33,7 @@ public class Connection {
 
 	public void setPublicKey(PublicKey pubKey) {
 		this.pubKey = pubKey;
-//		mp.addConnection(rm.getName()); // Now handled in KnockKnock
+		mp.addConnection(rm.getName(), this); // Now handled in KnockKnock
 	}
 
 	protected void setUpReciever() {
