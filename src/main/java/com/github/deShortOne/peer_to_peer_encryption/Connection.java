@@ -12,6 +12,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import javafx.scene.control.TextArea;
+
 public class Connection {
 
 	private Socket socket;
@@ -25,10 +27,15 @@ public class Connection {
 	
 	private ConnectionRecieve rm;
 	
+	private TextArea inputoutput;
+	
 	public Connection(MessagePage mp, CryptMessage cm, Socket socket) {
 		this.mp = mp;
 		this.cm = cm;
 		this.socket = socket;
+		inputoutput = new TextArea();
+		inputoutput.setEditable(false);
+		inputoutput.setWrapText(true);
 	}
 
 	public void setPublicKey(PublicKey pubKey) {
@@ -72,6 +79,14 @@ public class Connection {
 				| InvalidAlgorithmParameterException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void recieveMessage(String msg) {
+		inputoutput.appendText(msg + "\n");
+	}
+	
+	public TextArea getMsgWindow() {
+		return inputoutput;
 	}
 
 	private void sendMessage(byte[] msg) throws IOException {

@@ -53,7 +53,7 @@ public class ConnectionRecieve implements Runnable {
 			try {
 				byte[] base = getBytes(dis);
 				byte[] cipherMessage = getBytes(dis);
-				mp.recieveMessage(nameOfOther + ": "
+				connection.recieveMessage(nameOfOther + ": "
 						+ cm.recieveMessage(base, cipherMessage));
 			} catch (SocketException e) {
 				System.err.println("Connection lost");

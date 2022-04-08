@@ -37,7 +37,7 @@ public class MessagePage extends Application {
 
 	private TextField output;
 
-	private TextArea inputoutput;
+	private ScrollPane inputoutputScroll;
 
 	private Text outputMsg;
 
@@ -91,7 +91,7 @@ public class MessagePage extends Application {
 		}
 
 		Scene s = new Scene(setupPage());
-		
+
 		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
 			if (key.getCode() == KeyCode.ENTER) {
 				try {
@@ -151,12 +151,8 @@ public class MessagePage extends Application {
 		connections.put(name, newConnection);
 		Platform.runLater(() -> {
 			addContact(name);
+			setCurrContact(name);
 		});
-		setCurrContact(name);
-	}
-
-	public void recieveMessage(String msg) {
-		inputoutput.appendText(msg + "\n");
 	}
 
 	public void setErrorMsg(String msg) {
@@ -187,19 +183,12 @@ public class MessagePage extends Application {
 		outputMsg.setId("ErrorMsg");
 		root.getChildren().add(outputMsg);
 
-		// Text interactions
-		inputoutput = new TextArea();
-		inputoutput.setId("inputoutput");
-		inputoutput.setEditable(false);
-		inputoutput.setWrapText(true);
+		inputoutputScroll = new ScrollPane();
+		inputoutputScroll.setId("scrollpane");
+		inputoutputScroll.setHbarPolicy(ScrollBarPolicy.NEVER);
+		inputoutputScroll.setVbarPolicy(ScrollBarPolicy.NEVER);
 
-		ScrollPane sp = new ScrollPane();
-		sp.setId("scrollpane");
-		sp.setHbarPolicy(ScrollBarPolicy.NEVER);
-		sp.setVbarPolicy(ScrollBarPolicy.NEVER);
-		sp.setContent(inputoutput);
-
-		root.getChildren().add(sp);
+		root.getChildren().add(inputoutputScroll);
 
 		output = new TextField();
 		output.setId("sendArea");
@@ -234,7 +223,7 @@ public class MessagePage extends Application {
 
 		if (!matcher.matches()) {
 			currConnection.sendMessageEncrypted(msg);
-			recieveMessage("You: " + msg);
+			currConnection.recieveMessage("You: " + msg);
 		}
 	}
 
@@ -255,5 +244,6 @@ public class MessagePage extends Application {
 
 	private void setCurrContact(String name) {
 		currConnection = connections.get(name);
+		inputoutputScroll.setContent(currConnection.getMsgWindow());
 	}
 }
