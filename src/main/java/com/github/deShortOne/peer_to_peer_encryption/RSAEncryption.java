@@ -323,5 +323,9 @@ public class RSAEncryption {
 	public PublicKey getPublicKey() {
 		return publicKey;
 	}
+	
+	public String getName() {
+		return username;
+	}
 
 }

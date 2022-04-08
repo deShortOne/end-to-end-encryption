@@ -36,9 +36,14 @@ public class StartScreen {
 	public static String fileLoc = "files\\accounts.csv";
 
 	// should be non-static?
-	private static RSAEncryption rsaEncryption;
+	private RSAEncryption rsaEncryption;
+	private Main m;
+	
+	public StartScreen(Main m) {
+		this.m = m;
+	}
 
-	public static Parent loginPage() {
+	public Parent loginPage() {
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
 		grid.setVgap(10);
@@ -81,7 +86,7 @@ public class StartScreen {
 					rsaEncryption = new RSAEncryption(usernameInput.getText(),
 							passwordInput.getText(), false);
 					outputMsg.setText("Success!");
-					moveToNextWindow();
+					m.goMessagePage();
 				} catch (NoSuchAlgorithmException | InvalidKeySpecException
 						| IOException | NoSuchPaddingException e1) {
 					e1.printStackTrace();
@@ -109,7 +114,7 @@ public class StartScreen {
 				if (goodInput) {
 					rsaEncryption = new RSAEncryption(usernameInput.getText(),
 							passwordInput.getText(), true);
-					moveToNextWindow();
+					m.goMessagePage();
 					outputMsg.setText("Sign up success!");
 				} else {
 					if (blankInput(usernameInput.getText())) 
@@ -130,9 +135,12 @@ public class StartScreen {
 		return grid;
 	}
 
-	public static void moveToNextWindow() {
-		CryptMessage cm = new CryptMessage(rsaEncryption);
-		cm.getClass();
+	public CryptMessage getCryptMessage() {
+		return new CryptMessage(rsaEncryption);
+	}
+	
+	public String getName() {
+		return rsaEncryption.getName();
 	}
 
 	public static boolean loginUsernameAndPassword(String username,

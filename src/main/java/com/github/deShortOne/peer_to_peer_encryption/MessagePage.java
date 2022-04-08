@@ -59,34 +59,16 @@ public class MessagePage extends Application {
 	private VBox contactsListRoot;
 
 	/**
-	 * Testing
-	 */
-	public MessagePage() {
-//		try {
-//			c = new Connection(this);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			// Invalid Connection
-//		}
-	}
-
-	/**
 	 * Real one.
 	 * 
 	 * @param cm
 	 */
-	public MessagePage(CryptMessage cm) {
+	public MessagePage(CryptMessage cm, String name) {
 		this.cm = cm;
+		this.name = name;
 	}
 
 	public void setStage(Stage stage) {
-		// should be passed in
-		try {
-			cm = new CryptMessage(new RSAEncryption(name, name, true));
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException
-				| NoSuchPaddingException | IOException e1) {
-			e1.printStackTrace();
-		}
 
 		Scene s = new Scene(setupPage());
 
@@ -105,6 +87,12 @@ public class MessagePage extends Application {
 		stage.setScene(s);
 		stage.show();
 		stage.setTitle(name);
+		
+		try {
+			new KnockKnock(this, cm);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
