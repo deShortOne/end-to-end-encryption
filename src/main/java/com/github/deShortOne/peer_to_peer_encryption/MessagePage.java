@@ -32,8 +32,7 @@ import java.util.Random;
 
 public class MessagePage extends Application {
 
-	private Connection newConnection;
-
+	private KnockKnock newConnections;
 	private Connection currConnection;
 
 	private TextField output;
@@ -92,7 +91,7 @@ public class MessagePage extends Application {
 		}
 
 		Scene s = new Scene(setupPage());
-
+		
 		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
 			if (key.getCode() == KeyCode.ENTER) {
 				try {
@@ -108,12 +107,6 @@ public class MessagePage extends Application {
 		stage.setScene(s);
 		stage.show();
 		stage.setTitle(name);
-
-		try {
-			newConnection = new Connection(this, cm);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -139,9 +132,9 @@ public class MessagePage extends Application {
 		primaryStage.setScene(s);
 		primaryStage.show();
 		primaryStage.setTitle(name);
-
 		try {
-			newConnection = new Connection(this, cm);
+			newConnections = new KnockKnock(this, cm);
+			System.out.println("ASDF");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -155,17 +148,12 @@ public class MessagePage extends Application {
 	 * 
 	 * @param name
 	 */
-	public void addConnection(String name) {
+	public void addConnection(String name, Connection newConnection) {
 		connections.put(name, newConnection);
 		Platform.runLater(() -> {
 			addContact(name);
 		});
 		setCurrContact(name);
-		try {
-			newConnection = new Connection(this, cm);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void recieveMessage(String msg) {
