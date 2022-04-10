@@ -1,5 +1,6 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
@@ -59,15 +60,15 @@ public class MessagePage extends Application {
 	private VBox contactsListRoot;
 
 	/**
+<<<<<<< Updated upstream
 	 * Testing
+	 * For junit tests
+	 * 
+	 * @throws Exception
 	 */
 	public MessagePage() {
-//		try {
-//			c = new Connection(this);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			// Invalid Connection
-//		}
+//			start(new Stage());
+		System.out.println("Should not be called when launching from main");
 	}
 
 	/**
@@ -79,6 +80,11 @@ public class MessagePage extends Application {
 		this.cm = cm;
 	}
 
+	/**
+	 * Only junit!
+	 * 
+	 * @param stage
+	 */
 	public void setStage(Stage stage) {
 		// should be passed in
 		try {
@@ -105,14 +111,20 @@ public class MessagePage extends Application {
 		stage.setScene(s);
 		stage.show();
 		stage.setTitle(name);
+//		try {
+//			new KnockKnock(this, cm);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		// should be passed in
+		System.out.println("ASDFASDFASDFASDFASDFASDF");
 		cm = new CryptMessage(new RSAEncryption(name, name, true));
 		/**/
-
+		setupFolders();
 		Scene s = new Scene(setupPage());
 
 		s.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
@@ -138,7 +150,9 @@ public class MessagePage extends Application {
 	}
 
 	public static void main(String[] args) {
+		System.out.println("?");
 		launch(args);
+		System.out.println("?");
 	}
 
 	/**
@@ -243,5 +257,15 @@ public class MessagePage extends Application {
 	private void setCurrContact(String name) {
 		currConnection = connections.get(name);
 		inputoutputScroll.setContent(currConnection.getMsgWindow());
+	}
+
+	/**
+	 * Ensures folder for this user is already created.
+	 */
+	private void setupFolders() {
+		File f = new File(Main.contacts + getName());
+		if (!f.exists()) {
+			f.mkdir();
+		}
 	}
 }

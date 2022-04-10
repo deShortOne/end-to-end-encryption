@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -187,13 +188,19 @@ public class RSAEncryption {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeySpecException
 	 */
-	public void getPublicKeyFromFile(String name)
+	public static PublicKey getPublicKeyFromFile(String name)
 			throws IOException, InvalidKeySpecException {
-		File publicKeyFile = new File(publicKeyFileLoc + name + ".pubkey");
-		byte[] publicKeyBytes = Files.readAllBytes(publicKeyFile.toPath());
+		return getPublicKeyFromFile(
+				new File(publicKeyFileLoc + name + ".pubkey").toPath());
+	}
+
+	public static PublicKey getPublicKeyFromFile(Path path)
+			throws IOException, InvalidKeySpecException {
+		byte[] publicKeyBytes = Files.readAllBytes(path);
 
 		EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-		publicKey = keyFactory.generatePublic(publicKeySpec);
+		// publicKey = keyFactory.generatePublic(publicKeySpec);
+		return keyFactory.generatePublic(publicKeySpec);
 	}
 
 	public String encrypt(String clearText) throws InvalidKeyException,
@@ -259,9 +266,9 @@ public class RSAEncryption {
 		sig.initSign(privateKey);
 		sig.update(clearText);
 		byte[] signatureBytes = sig.sign();
-		
+
 		sig.initVerify(publicKey);
-        sig.update(clearText);
+		sig.update(clearText);
 
 		return signatureBytes;
 	}
@@ -271,7 +278,7 @@ public class RSAEncryption {
 			BadPaddingException, SignatureException, NoSuchAlgorithmException {
 		Signature sig = Signature.getInstance("SHA1WithRSA");
 		sig.initVerify(key);
-        sig.update(msg);
+		sig.update(msg);
 
 		return sig.verify(clearText);
 	}
@@ -322,6 +329,10 @@ public class RSAEncryption {
 	 */
 	public PublicKey getPublicKey() {
 		return publicKey;
+	}
+
+	public String getName() {
+		return username;
 	}
 
 }

@@ -138,7 +138,7 @@ public class CryptMessage {
 			base = RSAEncryption.decrypt(cipherBase, priKey);
 		} catch (IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
-			return "_RSAEncryption_failt_";
+			return "_RSAEncryption_fault_";
 		}
 
 		StringBuilder sb = new StringBuilder();
