@@ -8,6 +8,8 @@ public class Main extends Application {
 
 	private Stage stage;
 	
+	public static String contacts = "./contacts/";
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		stage = primaryStage;

@@ -3,6 +3,8 @@ package com.github.deShortOne.peer_to_peer_encryption;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -50,16 +52,6 @@ public class Connection {
 		rm = new ConnectionRecieve(this, socket, mp, cm);
 		Thread t = new Thread(rm);
 		t.start();
-		try {
-			t.join();
-			checkAddressBook();
-		} catch (InterruptedException e) {
-			System.err.println("Connection error");
-		} catch (InvalidKeySpecException e) {
-			System.err.println("Invalid security key");
-		} catch (IOException e) {
-			System.err.println("Connection error");
-		}
 	}
 
 	protected void setUpSender() {
@@ -115,20 +107,38 @@ public class Connection {
 		inputoutput.setWrapText(true);
 	}
 
-	private void checkAddressBook()
+	protected void checkAddressBook()
 			throws InvalidKeySpecException, IOException {
-		File f = new File(mp.getName() + "/" + rm.getName() + ".txt");
+
+		String fileLoc = Main.contacts + mp.getName() + "/" + rm.getName()
+				+ ".pubkey";
+
+		File f = new File(fileLoc);
 		if (f.exists()) {
 			PublicKey contactsPubKey = RSAEncryption
 					.getPublicKeyFromFile(f.toPath());
 
 			if (!pubKey.equals(contactsPubKey)) {
 				// Same name but different public key!!
-				recieveMessage("Warning: same username but security key has changed");
+				recieveMessage(
+						"Warning: same username but security key has changed");
 			}
 		} else {
 			// New contact
 			recieveMessage("Warning: new contact");
+
+			f.createNewFile();
+			try (FileOutputStream fos = new FileOutputStream(fileLoc)) {
+				fos.write(pubKey.getEncoded());
+			} catch (FileNotFoundException e) {
+				if (!f.exists()) {
+					f.mkdirs();
+				}
+				FileOutputStream fos = new FileOutputStream(fileLoc);
+
+				fos.write(pubKey.getEncoded());
+				fos.close();
+			}
 		}
 	}
 }

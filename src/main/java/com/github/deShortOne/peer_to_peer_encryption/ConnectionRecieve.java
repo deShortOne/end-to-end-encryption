@@ -39,6 +39,7 @@ public class ConnectionRecieve implements Runnable {
 		try {
 			nameOfOther = getMessageClear(dis);
 			connection.setPublicKey(getPublicKey(dis));
+			connection.checkAddressBook();
 		} catch (SocketException e1) {
 			System.err.println("Connection lost");
 			return;

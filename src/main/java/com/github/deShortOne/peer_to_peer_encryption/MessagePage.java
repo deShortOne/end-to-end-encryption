@@ -60,9 +60,7 @@ public class MessagePage extends Application {
 	private VBox contactsListRoot;
 
 	/**
-<<<<<<< Updated upstream
-	 * Testing
-	 * For junit tests
+	 * <<<<<<< Updated upstream Testing For junit tests
 	 * 
 	 * @throws Exception
 	 */
@@ -263,9 +261,9 @@ public class MessagePage extends Application {
 	 * Ensures folder for this user is already created.
 	 */
 	private void setupFolders() {
-		File f = new File(Main.contacts + getName());
+		File f = new File("contacts/" + getName());
 		if (!f.exists()) {
-			f.mkdir();
+			System.out.println("Made folder: " + f.mkdirs());
 		}
 	}
 }
