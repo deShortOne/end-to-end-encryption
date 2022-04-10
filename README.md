@@ -1,1 +1,1 @@
-# peer to peer encryption 
+# end to end encryption 
