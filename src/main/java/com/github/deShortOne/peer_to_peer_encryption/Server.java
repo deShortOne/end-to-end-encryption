@@ -14,11 +14,7 @@ public class Server {
 	private int n = 0;
 
 	public Server() throws IOException {
-		System.out.println("Server started");
-
 		setupConnections();
-
-		System.out.println("Done");
 	}
 
 	private void setupConnections() {
@@ -29,11 +25,11 @@ public class Server {
 					Exchange ex = new Exchange(socket);
 					ex.sendMessage(("Hi" + n++).getBytes());
 
-					byte[] name = ex.recieveMessage();
-					addressBook.put(new String(name, StandardCharsets.UTF_8),
-							ex);
-					setupListening(new String(name, StandardCharsets.UTF_8), ex);
-					
+					String name = new String(ex.recieveMessage(),
+							StandardCharsets.UTF_8);
+					addressBook.put(name, ex);
+					setupListening(name, ex);
+
 				} catch (IOException e) {
 					e.printStackTrace();
 					try {
@@ -50,28 +46,28 @@ public class Server {
 	private void setupListening(String name, Exchange ex) {
 		new Thread(() -> {
 			while (true)
-			try {
-				byte[] msgType = ex.recieveMessage();
-				byte[] inMsg = ex.recieveMessage();
-				System.out.println(msgType);
-				System.out.println(inMsg);
-				
-				if (msgType[0] == 'A') {
-					System.out.println("Redirect to A");
-					addressBook.get("A").sendMessage(name.getBytes());
-					addressBook.get("A").sendMessage(inMsg);
-				} else {
-					System.out.println("Redirect to B");
-					addressBook.get("B").sendMessage(name.getBytes());
-					addressBook.get("B").sendMessage(inMsg);
+				try {
+					byte[] msgType = ex.recieveMessage();
+					byte[] inMsg = ex.recieveMessage();
+					System.out.println(msgType);
+					System.out.println(inMsg);
+
+					if (msgType[0] == 'A') {
+						System.out.println("Redirect to A");
+						addressBook.get("A").sendMessage(name.getBytes());
+						addressBook.get("A").sendMessage(inMsg);
+					} else {
+						System.out.println("Redirect to B");
+						addressBook.get("B").sendMessage(name.getBytes());
+						addressBook.get("B").sendMessage(inMsg);
+					}
+
+					System.out.printf("%s send message: %s%n", name,
+							new String(inMsg, StandardCharsets.UTF_8));
+				} catch (IOException e) {
+					e.printStackTrace();
+					break;
 				}
-				
-				System.out.printf("%s send message: %s%n", name,
-						new String(inMsg, StandardCharsets.UTF_8));
-			} catch (IOException e) {
-				e.printStackTrace();
-				break;
-			}
 		}).start();
 	}
 
