@@ -5,15 +5,15 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Client extends Exchange {
 
 	// Should be passed in via the constructor
 	private String name;
+	
+	private Thread serverListener;
 
 	public Client() throws IOException {
-		System.out.println("Client started");
 
 		byte[] nameByte = new byte[3];
 		new Random().nextBytes(nameByte);
@@ -23,20 +23,19 @@ public class Client extends Exchange {
 	}
 
 	public Client(String name) throws IOException {
+		System.out.println("Client started");
 		this.name = name;
 		establishConnectionToServer();
 		listenToServer();
-
-		Scanner in = new Scanner(System.in);
-		while (true) {
-			String msg = in.nextLine();
-			sendMessage(msg);
-		}
 	}
 
 	public void sendMessage(String msg) throws IOException {
 		System.out.printf("Client %s sends %s%n", name, msg);
 		super.sendMessage(msg.getBytes());
+	}
+	
+	public void exit() {
+		serverListener.interrupt();
 	}
 
 	private void establishConnectionToServer() throws IOException {
@@ -50,7 +49,7 @@ public class Client extends Exchange {
 	}
 
 	private void listenToServer() {
-		new Thread(() -> {
+		serverListener = new Thread(() -> {
 			while (true) {
 				try {
 					byte[] sender = super.recieveMessage();
@@ -63,7 +62,8 @@ public class Client extends Exchange {
 					break;
 				}
 			}
-		}).start();
+		});
+		serverListener.start();
 	}
 
 	public static void main(String[] args) throws IOException {

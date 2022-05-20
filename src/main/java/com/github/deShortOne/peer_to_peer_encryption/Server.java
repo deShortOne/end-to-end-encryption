@@ -14,11 +14,7 @@ public class Server {
 	private int n = 0;
 
 	public Server() throws IOException {
-		System.out.println("Server started");
-
 		setupConnections();
-
-		System.out.println("Done");
 	}
 
 	private void setupConnections() {
