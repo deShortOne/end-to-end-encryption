@@ -38,8 +38,7 @@ public class StartScreenTest {
 
 	@Start
 	public void start(Stage stage) {
-		StartScreen s = new StartScreen();
-		nodeToScene = s.loginPage();
+		nodeToScene = StartScreen.loginPage();
 		Scene s = new Scene(nodeToScene);
 		stage.setScene(s);
 		stage.show();
