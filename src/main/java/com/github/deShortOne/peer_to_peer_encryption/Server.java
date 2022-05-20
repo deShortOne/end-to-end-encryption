@@ -59,8 +59,19 @@ public class Server {
 
 					String name = new String(ex.recieveMessage(),
 							StandardCharsets.UTF_8);
+					
+					for (String names : addressBook.keySet()) {
+						addressBook.get(names).sendMessage(name.getBytes());
+						addressBook.get(names).sendMessage(("Say hi to " + name + "!").getBytes());
+						
+						ex.sendMessage(names.getBytes());
+						ex.sendMessage(("Say hi to " + names + "!").getBytes());
+					}
+					
 					addressBook.put(name, ex);
 					setupListening(name, ex);
+					System.out.println("New connection from " + name
+							+ " " + addressBook.size());
 
 				} catch (IOException e) {
 					e.printStackTrace();

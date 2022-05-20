@@ -1,9 +1,11 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 public class Client extends Exchange {
 
@@ -11,21 +13,30 @@ public class Client extends Exchange {
 	 * Name of user of the client.
 	 */
 	private String name;
-	
+
 	/**
 	 * Thread that listens to server.
 	 */
 	private Thread serverListener;
 
 	/**
+	 * Name + conversation page linked to it. Name should be class called Object
+	 * which holds other information like public key
+	 */
+	private HashMap<String, ConversationPage> messages = new HashMap<>();
+
+	private MessageWindow mw;
+	
+	/**
 	 * Creates client object which establishes connection to server.
 	 * 
-	 * @param name			of user of client
-	 * @throws IOException	
+	 * @param name of user of client
+	 * @throws IOException
 	 */
-	public Client(String name) throws IOException {
-		System.out.println("Client started");
+	public Client(String name, MessageWindow mw) throws IOException, ConnectException {
+		System.out.println("Client started " + name);
 		this.name = name;
+		this.mw = mw;
 		establishConnectionToServer();
 		listenToServer();
 	}
@@ -36,9 +47,15 @@ public class Client extends Exchange {
 	 * @param msg
 	 * @throws IOException
 	 */
-	public void sendMessage(String msg) throws IOException {
-		System.out.printf("Client %s sends %s%n", name, msg);
+	public void sendMessage(String recipetent, String msg) throws IOException {
+		messages.get(recipetent).addText(msg);
+		// TODO Encrypt it!
+		super.sendMessage(recipetent.getBytes());
 		super.sendMessage(msg.getBytes());
+	}
+
+	public ConversationPage getMessages(String name) {
+		return messages.get(name);
 	}
 	
 	/**
@@ -51,6 +68,7 @@ public class Client extends Exchange {
 
 	/**
 	 * Creates connection to server.
+	 * 
 	 * @throws IOException
 	 */
 	private void establishConnectionToServer() throws IOException {
@@ -59,7 +77,7 @@ public class Client extends Exchange {
 
 		super.sendMessage(name.getBytes());
 	}
-	
+
 	/**
 	 * Listens to server.
 	 */
@@ -67,15 +85,22 @@ public class Client extends Exchange {
 		serverListener = new Thread(() -> {
 			while (true) {
 				try {
-					byte[] sender = super.recieveMessage();
-					byte[] msgInTmp = super.recieveMessage();
-					
+					byte[] senderB = super.recieveMessage();
+					byte[] msgInTmpB = super.recieveMessage();
+
 					// decode both sender and msgInTmp
+
+					String sender = new String(senderB, StandardCharsets.UTF_8);
+					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
 					
-					System.out.printf("%s says to %s: %s%n",
-							new String(sender, StandardCharsets.UTF_8),
-							this.name,
-							new String(msgInTmp, StandardCharsets.UTF_8));
+					if (!messages.containsKey(sender)) {
+						// TODO add new person into MessageWindow
+						messages.put(sender, new ConversationPage());
+						System.out.println("New person!");
+						mw.addContact(sender);
+					}
+					messages.get(sender).addText(msg);
+					
 				} catch (IOException e) {
 					e.printStackTrace();
 					break;
@@ -83,10 +108,5 @@ public class Client extends Exchange {
 			}
 		});
 		serverListener.start();
-	}
-
-	public static void main(String[] args) throws IOException {
-		// Run this class twice, replace A with B or vice versa
-		new Client("A");
 	}
 }

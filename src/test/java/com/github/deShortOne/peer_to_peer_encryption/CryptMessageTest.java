@@ -21,6 +21,9 @@ import javax.crypto.NoSuchPaddingException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.github.deShortOne.encryption.CryptMessage;
+import com.github.deShortOne.encryption.RSAEncryption;
+
 public class CryptMessageTest {
 
 	HashMap<String, PublicKey> friendsList = new HashMap<>();

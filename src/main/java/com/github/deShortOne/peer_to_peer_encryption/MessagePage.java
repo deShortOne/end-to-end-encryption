@@ -10,6 +10,9 @@ import java.util.regex.Matcher;
 
 import javax.crypto.NoSuchPaddingException;
 
+import com.github.deShortOne.encryption.CryptMessage;
+import com.github.deShortOne.encryption.RSAEncryption;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Parent;
@@ -31,8 +34,8 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class MessagePage extends Application {
-
-	private ConnectionDep currConnection;
+	
+	private Connection currConnection;
 
 	private TextField output;
 
@@ -42,32 +45,17 @@ public class MessagePage extends Application {
 
 	private CryptMessage cm;
 
-	private static Random rand = new Random();
-
-	private static String[] fakeNames = new String[] { "Alice", "Bob",
-			"Charlie", "Dieago", "Faizan", "Ghozi", "Holly", "Imogen", "Julia",
-			"Kieren" };
 	/**
 	 * Testing. username of self.
 	 */
-	private String name = fakeNames[rand.nextInt(10)];
+	private String name = "AS";
 
 	/**
 	 * HashMap<name, connection to that person>
 	 */
-	private HashMap<String, ConnectionDep> connections = new HashMap<>();
+	private HashMap<String, Connection> connections = new HashMap<>();
 
 	private VBox contactsListRoot;
-
-	/**
-	 * <<<<<<< Updated upstream Testing For junit tests
-	 * 
-	 * @throws Exception
-	 */
-	public MessagePage() {
-//			start(new Stage());
-		System.out.println("Should not be called when launching from main");
-	}
 
 	/**
 	 * Real one.
@@ -109,11 +97,6 @@ public class MessagePage extends Application {
 		stage.setScene(s);
 		stage.show();
 		stage.setTitle(name);
-//		try {
-//			new KnockKnock(this, cm);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	@Override
@@ -140,11 +123,6 @@ public class MessagePage extends Application {
 		primaryStage.setScene(s);
 		primaryStage.show();
 		primaryStage.setTitle(name);
-		try {
-			new KnockKnock(this, cm);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public static void main(String[] args) {
@@ -157,7 +135,7 @@ public class MessagePage extends Application {
 	 * 
 	 * @param name
 	 */
-	public void addConnection(String name, ConnectionDep newConnection) {
+	public void addConnection(String name, Connection newConnection) {
 		connections.put(name, newConnection);
 		Platform.runLater(() -> {
 			addContact(name);
