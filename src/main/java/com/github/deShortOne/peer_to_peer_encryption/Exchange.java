@@ -16,6 +16,11 @@ public class Exchange {
 		setStream = false;
 	}
 	
+	public Exchange(Socket socket) throws IOException {
+		setSocket(socket);
+		setStream = true;
+	}
+	
 	protected void setSocket(Socket socket) throws IOException {
 		output = new DataOutputStream(socket.getOutputStream());
 		input = new DataInputStream(socket.getInputStream());
