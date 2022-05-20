@@ -42,9 +42,6 @@ public class Client extends Exchange {
 		Socket socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
 		super.setSocket(socket);
 
-		byte[] msgInTmp = super.recieveMessage();
-		System.out.println(new String(msgInTmp, StandardCharsets.UTF_8));
-
 		super.sendMessage(name.getBytes());
 	}
 
@@ -54,8 +51,9 @@ public class Client extends Exchange {
 				try {
 					byte[] sender = super.recieveMessage();
 					byte[] msgInTmp = super.recieveMessage();
-					System.out.printf("%s says: %s%n",
+					System.out.printf("%s says to %s: %s%n",
 							new String(sender, StandardCharsets.UTF_8),
+							this.name,
 							new String(msgInTmp, StandardCharsets.UTF_8));
 				} catch (IOException e) {
 					e.printStackTrace();

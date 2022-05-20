@@ -11,9 +11,9 @@ public class Server {
 	private HashMap<String, Exchange> addressBook = new HashMap<>();
 
 	private ServerSocket server = new ServerSocket(8080);
-	private int n = 0;
 
 	public Server() throws IOException {
+		System.out.println("Server start");
 		setupConnections();
 	}
 
@@ -23,7 +23,6 @@ public class Server {
 				try {
 					Socket socket = server.accept();
 					Exchange ex = new Exchange(socket);
-					ex.sendMessage(("Hi" + n++).getBytes());
 
 					String name = new String(ex.recieveMessage(),
 							StandardCharsets.UTF_8);
@@ -48,22 +47,20 @@ public class Server {
 			while (true)
 				try {
 					byte[] msgType = ex.recieveMessage();
-					byte[] inMsg = ex.recieveMessage();
-					System.out.println(msgType);
-					System.out.println(inMsg);
+					byte[] inMsg = ex.recieveMessage(); // Encrypted with
+														// recipients public key
 
-					if (msgType[0] == 'A') {
-						System.out.println("Redirect to A");
-						addressBook.get("A").sendMessage(name.getBytes());
-						addressBook.get("A").sendMessage(inMsg);
-					} else {
-						System.out.println("Redirect to B");
-						addressBook.get("B").sendMessage(name.getBytes());
-						addressBook.get("B").sendMessage(inMsg);
+					// Decode msgType using Server's private key
+					String sendTo = new String(msgType, StandardCharsets.UTF_8);
+
+					if (addressBook.containsKey(sendTo)) {
+						// That person's name
+						addressBook.get(sendTo).sendMessage(name.getBytes());
+						addressBook.get(sendTo).sendMessage(inMsg);
 					}
 
-					System.out.printf("%s send message: %s%n", name,
-							new String(inMsg, StandardCharsets.UTF_8));
+					System.out.printf("%s send message to %s: %s%n", name,
+							sendTo, new String(inMsg, StandardCharsets.UTF_8));
 				} catch (IOException e) {
 					e.printStackTrace();
 					break;

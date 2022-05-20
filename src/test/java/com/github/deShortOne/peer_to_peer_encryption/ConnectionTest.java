@@ -21,8 +21,15 @@ public class ConnectionTest {
 				Client a = new Client("A");
 				a.sendMessage("B".getBytes());
 				a.sendMessage("hii".getBytes());
+				
+				Thread.sleep(2000);
+				// Hopefully should be long enough for message to be sent and
+				// received
+				
 				a.exit();
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 
@@ -34,6 +41,9 @@ public class ConnectionTest {
 				Thread.sleep(2000);
 				// Hopefully should be long enough for message to be sent and
 				// received
+				
+				b.sendMessage("A".getBytes());
+				b.sendMessage("hiyaa".getBytes());
 				b.exit();
 			} catch (IOException e) {
 				System.out.println("B");
