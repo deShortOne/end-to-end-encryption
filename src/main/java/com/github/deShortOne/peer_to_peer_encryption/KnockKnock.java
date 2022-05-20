@@ -38,7 +38,7 @@ public class KnockKnock {
 				while (true) {
 					try {
 						socket = server.accept();
-						new ServerConnection(mp, cm, socket);
+						new ServerConnectionDep(mp, cm, socket);
 						mp.setErrorMsg("");
 					} catch (IOException e) {
 

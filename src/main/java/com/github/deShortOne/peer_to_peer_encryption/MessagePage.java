@@ -32,7 +32,7 @@ import java.util.Random;
 
 public class MessagePage extends Application {
 
-	private Connection currConnection;
+	private ConnectionDep currConnection;
 
 	private TextField output;
 
@@ -55,7 +55,7 @@ public class MessagePage extends Application {
 	/**
 	 * HashMap<name, connection to that person>
 	 */
-	private HashMap<String, Connection> connections = new HashMap<>();
+	private HashMap<String, ConnectionDep> connections = new HashMap<>();
 
 	private VBox contactsListRoot;
 
@@ -157,7 +157,7 @@ public class MessagePage extends Application {
 	 * 
 	 * @param name
 	 */
-	public void addConnection(String name, Connection newConnection) {
+	public void addConnection(String name, ConnectionDep newConnection) {
 		connections.put(name, newConnection);
 		Platform.runLater(() -> {
 			addContact(name);
