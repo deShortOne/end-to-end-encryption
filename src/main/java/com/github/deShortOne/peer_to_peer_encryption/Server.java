@@ -13,7 +13,7 @@ public class Server {
 	private ServerSocket server = new ServerSocket(8080);
 	private int n = 0;
 
-	private Server() throws IOException {
+	public Server() throws IOException {
 		System.out.println("Server started");
 
 		setupConnections();
@@ -24,9 +24,8 @@ public class Server {
 	private void setupConnections() {
 		new Thread(() -> {
 			while (true) {
-				Socket socket;
 				try {
-					socket = server.accept();
+					Socket socket = server.accept();
 					Exchange ex = new Exchange(socket);
 					ex.sendMessage(("Hi" + n++).getBytes());
 
@@ -50,12 +49,28 @@ public class Server {
 
 	private void setupListening(String name, Exchange ex) {
 		new Thread(() -> {
+			while (true)
 			try {
+				byte[] msgType = ex.recieveMessage();
 				byte[] inMsg = ex.recieveMessage();
-				System.out.printf("%s send message: %s", name,
+				System.out.println(msgType);
+				System.out.println(inMsg);
+				
+				if (msgType[0] == 'A') {
+					System.out.println("Redirect to A");
+					addressBook.get("A").sendMessage(name.getBytes());
+					addressBook.get("A").sendMessage(inMsg);
+				} else {
+					System.out.println("Redirect to B");
+					addressBook.get("B").sendMessage(name.getBytes());
+					addressBook.get("B").sendMessage(inMsg);
+				}
+				
+				System.out.printf("%s send message: %s%n", name,
 						new String(inMsg, StandardCharsets.UTF_8));
 			} catch (IOException e) {
 				e.printStackTrace();
+				break;
 			}
 		}).start();
 	}

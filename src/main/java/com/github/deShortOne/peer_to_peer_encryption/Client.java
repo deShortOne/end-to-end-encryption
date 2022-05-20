@@ -5,11 +5,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Client extends Exchange {
 
-	private static Random random = new Random();
-	
 	// Should be passed in via the constructor
 	private String name;
 
@@ -19,23 +18,34 @@ public class Client extends Exchange {
 		byte[] nameByte = new byte[3];
 		new Random().nextBytes(nameByte);
 		name = new String(nameByte, StandardCharsets.UTF_8);
-		
-		establishConnectionToServer();
-		super.sendMessage("bye bye!".getBytes());
+
+		new Client(name);
 	}
-	
-	public void sendMessage(String msg) throws IOException {		
-		byte[] msgByte = new byte[3];
-		super.sendMessage(msgByte);
+
+	public Client(String name) throws IOException {
+		this.name = name;
+		establishConnectionToServer();
+		listenToServer();
+
+		Scanner in = new Scanner(System.in);
+		while (true) {
+			String msg = in.nextLine();
+			sendMessage(msg);
+		}
+	}
+
+	public void sendMessage(String msg) throws IOException {
+		System.out.printf("Client %s sends %s%n", name, msg);
+		super.sendMessage(msg.getBytes());
 	}
 
 	private void establishConnectionToServer() throws IOException {
 		Socket socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
 		super.setSocket(socket);
-		
+
 		byte[] msgInTmp = super.recieveMessage();
 		System.out.println(new String(msgInTmp, StandardCharsets.UTF_8));
-		
+
 		super.sendMessage(name.getBytes());
 	}
 
@@ -43,8 +53,11 @@ public class Client extends Exchange {
 		new Thread(() -> {
 			while (true) {
 				try {
+					byte[] sender = super.recieveMessage();
 					byte[] msgInTmp = super.recieveMessage();
-					System.out.println(new String(msgInTmp, StandardCharsets.UTF_8));
+					System.out.printf("%s says: %s%n",
+							new String(sender, StandardCharsets.UTF_8),
+							new String(msgInTmp, StandardCharsets.UTF_8));
 				} catch (IOException e) {
 					e.printStackTrace();
 					break;
@@ -54,6 +67,7 @@ public class Client extends Exchange {
 	}
 
 	public static void main(String[] args) throws IOException {
-		new Client();
+		// Run this class twice, replace A with B or vice versa
+		new Client("A");
 	}
 }
