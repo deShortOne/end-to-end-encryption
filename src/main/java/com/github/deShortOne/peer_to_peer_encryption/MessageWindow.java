@@ -41,13 +41,13 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	String name = "B";
+	static String name = "A";
 
 	/**
 	 * For running when called from main.
 	 */
 	public MessageWindow() {
-		new MessageWindow(name);
+		this(name);
 	}
 	
 	public MessageWindow(String username) {
