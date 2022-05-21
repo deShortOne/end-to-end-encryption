@@ -40,12 +40,19 @@ public class MessageWindow extends Application {
 
 	private VBox contactsListRoot;
 
-	// Alternate name
+	// Alternate name between A and B.
 	String name = "B";
 
+	/**
+	 * For running when called from main.
+	 */
 	public MessageWindow() {
+		new MessageWindow(name);
+	}
+	
+	public MessageWindow(String username) {
 		try {
-			client = new Client(name, this);
+			client = new Client(username, this);
 		} catch (ConnectException e) {
 			System.err.println("Server not live!");
 			System.exit(1);
