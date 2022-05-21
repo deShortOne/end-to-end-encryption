@@ -10,8 +10,7 @@ import java.util.HashMap;
 public class Server {
 
 	/**
-	 * Name + connection of that user.
-	 * Name should be replaced with contact.
+	 * Name + connection of that user. Name should be replaced with contact.
 	 */
 	private HashMap<String, Exchange> addressBook = new HashMap<>();
 
@@ -20,6 +19,9 @@ public class Server {
 	private Thread newConnections;
 	private Thread listeningToCurrentConnections;
 
+	// To be deleted FIXME
+	public static boolean autoAddName = false;
+
 	/**
 	 * Creates server.
 	 * 
@@ -27,14 +29,14 @@ public class Server {
 	 */
 	public Server() throws IOException {
 		System.out.println("Server start");
-		
+
 		try {
 			server = new ServerSocket(8080);
 		} catch (BindException e) {
 			System.err.println("Server already exists");
 			System.exit(0);
 		}
-		
+
 		setupConnections();
 	}
 
@@ -59,19 +61,23 @@ public class Server {
 
 					String name = new String(ex.recieveMessage(),
 							StandardCharsets.UTF_8);
-					
-					for (String names : addressBook.keySet()) {
-						addressBook.get(names).sendMessage(name.getBytes());
-						addressBook.get(names).sendMessage(("Say hi to " + name + "!").getBytes());
-						
-						ex.sendMessage(names.getBytes());
-						ex.sendMessage(("Say hi to " + names + "!").getBytes());
+
+					if (autoAddName) {
+						for (String names : addressBook.keySet()) {
+							addressBook.get(names).sendMessage(name.getBytes());
+							addressBook.get(names).sendMessage(
+									("Say hi to " + name + "!").getBytes());
+
+							ex.sendMessage(names.getBytes());
+							ex.sendMessage(
+									("Say hi to " + names + "!").getBytes());
+						}
 					}
-					
+
 					addressBook.put(name, ex);
 					setupListening(name, ex);
-					System.out.println("New connection from " + name
-							+ " " + addressBook.size());
+					System.out.println("New connection from " + name + " "
+							+ addressBook.size());
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -90,16 +96,19 @@ public class Server {
 	/**
 	 * Listens for client.
 	 * 
-	 * @param name	name of user of client
-	 * @param ex	
+	 * @param name name of user of client
+	 * @param ex
 	 */
 	private void setupListening(String name, Exchange ex) {
 		listeningToCurrentConnections = new Thread(() -> {
 			while (true)
 				try {
 					byte[] msgType = ex.recieveMessage();
-					byte[] inMsg = ex.recieveMessage(); // Encrypted with
-														// recipients public key
+					byte[] inMsg = ex.recieveMessage();
+					// Encrypted with recipients public key if message for
+					// reciptent
+					// Encrypted with server's public key if message for server,
+					// cause duh
 
 					// Decode msgType using Server's private key
 					String sendTo = new String(msgType, StandardCharsets.UTF_8);
@@ -113,6 +122,24 @@ public class Server {
 						System.out.printf("%s send message to %s: %s%n", name,
 								sendTo,
 								new String(inMsg, StandardCharsets.UTF_8));
+					} else if (sendTo.equals(MessageType.NEWFRIEND.name())) {
+						// decrypt inMsg to find person
+
+						String nameOther = new String(inMsg,
+								StandardCharsets.UTF_8);
+						if (addressBook.containsKey(nameOther)) {
+							addressBook.get(nameOther).sendMessage(
+									MessageType.NEWFRIEND.name().getBytes());
+							addressBook.get(nameOther)
+									.sendMessage(name.getBytes()); // give pub
+																	// key
+
+//							ex.sendMessage("YES".getBytes());
+
+						} else {
+							// Person no exist, so communicate that
+//							ex.sendMessage(MessageType.NO.name().getBytes());
+						}
 					} else {
 						System.out.println("Invalid user/ command");
 					}
