@@ -64,7 +64,7 @@ public class Client extends Exchange {
 	 * cannot find reciptent.
 	 * 
 	 * @param recipitent name of person to add
-	 * @return boolean if that name exists in server's database
+	 * @return boolean if that name exists in server's database [currently doesn't work]
 	 * @throws IOException
 	 */
 	public boolean addFriend(String recipitent) throws IOException {
@@ -77,7 +77,7 @@ public class Client extends Exchange {
 
 		return true;
 
-		// Cannot recieve cause there's a thread that's already listening...
+		// Cannot recieve cause there's a thread that's already listening... TODO
 //		System.out.println("Waiting to recieve"); // Not recieved???
 //		byte[] exist = super.recieveMessage();
 //		System.out.println("Recieved");
