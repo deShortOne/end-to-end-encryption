@@ -44,7 +44,7 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	static String name = "B";
+	static String name = "A";
 
 	/**
 	 * For running when called from main.
@@ -147,6 +147,8 @@ public class MessageWindow extends Application {
 
 		double diameter = 30;
 		Button btn = new Button("+");
+		btn.setOnAction(e -> addNewFriend());
+		
 		btn.setShape(new Circle(diameter));
 		btn.setMinSize(diameter, diameter);
 		btn.setMaxSize(diameter, diameter);
@@ -156,6 +158,7 @@ public class MessageWindow extends Application {
 		return sp;
 	}
 
+	// to be made private
 	public void addContact(String name) {
 		Platform.runLater(() -> {
 			Button b = new Button(name);
@@ -169,5 +172,33 @@ public class MessageWindow extends Application {
 	private void setCurrContact(String name) {
 		inputoutputScroll.setContent(client.getMessages(name).getMessages());
 		currentTalkingToPerson = name;
+	}
+	
+	private void addNewFriend() {
+		Stage s0 = new Stage();
+		
+		VBox root = new VBox();
+		Label l = new Label("Type in name");
+		TextField name = new TextField();
+		Button b = new Button("Send friend request");
+		b.setOnAction(e -> {
+			try {
+				boolean exist = client.addFriend(name.getText());
+				if (exist) {
+					addContact(name.getText());
+				}
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			s0.close();
+		});
+		
+		root.getChildren().addAll(l, name, b);
+		
+		
+		s0.setScene(new Scene(root));
+		s0.show();
+		
+		// TODO change modality to ensure friend request is sent
 	}
 }

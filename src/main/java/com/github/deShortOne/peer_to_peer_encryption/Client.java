@@ -26,14 +26,15 @@ public class Client extends Exchange {
 	private HashMap<String, ConversationPage> messages = new HashMap<>();
 
 	private MessageWindow mw;
-	
+
 	/**
 	 * Creates client object which establishes connection to server.
 	 * 
 	 * @param name of user of client
 	 * @throws IOException
 	 */
-	public Client(String name, MessageWindow mw) throws IOException, ConnectException {
+	public Client(String name, MessageWindow mw)
+			throws IOException, ConnectException {
 		System.out.println("Client started " + name);
 		this.name = name;
 		this.mw = mw;
@@ -57,7 +58,36 @@ public class Client extends Exchange {
 	public ConversationPage getMessages(String name) {
 		return messages.get(name);
 	}
-	
+
+	/**
+	 * Makes friend request to server and returns true, returns false if server
+	 * cannot find reciptent.
+	 * 
+	 * @param recipitent name of person to add
+	 * @return boolean if that name exists in server's database
+	 * @throws IOException
+	 */
+	public boolean addFriend(String recipitent) throws IOException {
+		super.sendMessage(MessageType.NEWFRIEND.name().getBytes());
+		super.sendMessage(recipitent.getBytes());
+
+		messages.put(recipitent, new ConversationPage());
+		messages.get(recipitent).addText(recipitent
+				+ " has recieved your friend request\nWait for them to accept!");
+
+		return true;
+
+		// Cannot recieve cause there's a thread that's already listening...
+//		System.out.println("Waiting to recieve"); // Not recieved???
+//		byte[] exist = super.recieveMessage();
+//		System.out.println("Recieved");
+//		
+//		// decrypt
+//		String str = new String(exist, StandardCharsets.UTF_8);
+//		
+//		return str.equals(MessageType.YES.name());
+	}
+
 	/**
 	 * Stops listening to server.
 	 */
@@ -92,15 +122,24 @@ public class Client extends Exchange {
 
 					String sender = new String(senderB, StandardCharsets.UTF_8);
 					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
-					
-					if (!messages.containsKey(sender)) {
+
+					if (Server.autoAddName && !messages.containsKey(sender)) {
 						// TODO add new person into MessageWindow
 						messages.put(sender, new ConversationPage());
 						System.out.println("New person!");
 						mw.addContact(sender);
 					}
-					messages.get(sender).addText(msg);
-					
+
+					if (messages.containsKey(sender)) {
+						messages.get(sender).addText(msg);
+					} else if (sender.equals(MessageType.NEWFRIEND.name())) {
+						messages.put(msg, new ConversationPage());
+						messages.get(msg).addText(msg
+								+ " wants to be your friend!\nReply to accept!");
+						System.out.println("New person!");
+						mw.addContact(msg);
+					}
+
 				} catch (IOException e) {
 					e.printStackTrace();
 					break;
