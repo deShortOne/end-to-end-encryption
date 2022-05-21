@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,7 +17,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -41,7 +44,7 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	static String name = "A";
+	static String name = "B";
 
 	/**
 	 * For running when called from main.
@@ -49,7 +52,7 @@ public class MessageWindow extends Application {
 	public MessageWindow() {
 		this(name);
 	}
-	
+
 	public MessageWindow(String username) {
 		try {
 			client = new Client(username, this);
@@ -131,15 +134,26 @@ public class MessageWindow extends Application {
 
 		if (!matcher.matches()) {
 			client.sendMessage(currentTalkingToPerson, msg);
-
 		}
 	}
 
 	private Parent contactsList() {
+		StackPane sp = new StackPane();
+
 		contactsListRoot = new VBox();
 		Label l = new Label("Contacts    ");
 		contactsListRoot.getChildren().add(l);
-		return contactsListRoot;
+		sp.getChildren().add(contactsListRoot);
+
+		double diameter = 30;
+		Button btn = new Button("+");
+		btn.setShape(new Circle(diameter));
+		btn.setMinSize(diameter, diameter);
+		btn.setMaxSize(diameter, diameter);
+		sp.getChildren().add(btn);
+		StackPane.setAlignment(btn, Pos.BOTTOM_RIGHT);
+
+		return sp;
 	}
 
 	public void addContact(String name) {
@@ -150,12 +164,10 @@ public class MessageWindow extends Application {
 			});
 			contactsListRoot.getChildren().add(b);
 		});
-		
 	}
 
 	private void setCurrContact(String name) {
 		inputoutputScroll.setContent(client.getMessages(name).getMessages());
 		currentTalkingToPerson = name;
-
 	}
 }
