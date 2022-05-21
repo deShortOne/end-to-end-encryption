@@ -1,4 +1,4 @@
-package com.github.deShortOne.encryption;
+package com.baeldung.encryption;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,7 +32,7 @@ import javax.crypto.NoSuchPaddingException;
 // https://www.baeldung.com/java-rsa
 public class RSAEncryption {
 
-	static String publicKeyFileLoc = "public_keys\\";
+	public static String publicKeyFileLoc = "public_keys\\";
 
 	private PublicKey publicKey;
 

@@ -14,7 +14,7 @@ import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 
-import com.github.deShortOne.encryption.RSAEncryption;
+import com.baeldung.encryption.RSAEncryption;
 import com.opencsv.CSVWriter;
 
 import javafx.scene.Node;

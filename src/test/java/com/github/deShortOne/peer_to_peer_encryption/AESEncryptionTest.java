@@ -16,7 +16,7 @@ import javax.crypto.spec.IvParameterSpec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.github.deShortOne.encryption.AESEncryption;
+import com.baeldung.encryption.AESEncryption;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

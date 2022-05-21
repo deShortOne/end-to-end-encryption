@@ -1,4 +1,4 @@
-package com.github.deShortOne.encryption;
+package com.baeldung.encryption;
 
 import java.io.File;
 import java.io.IOException;
