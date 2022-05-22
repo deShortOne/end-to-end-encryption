@@ -5,11 +5,15 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
+import javax.crypto.NoSuchPaddingException;
+
 import com.baeldung.encryption.CryptMessage;
+import com.baeldung.encryption.RSAEncryption;
 
 public class Server {
 
@@ -23,6 +27,8 @@ public class Server {
 	private Thread newConnections;
 	private Thread listeningToCurrentConnections;
 
+	private CryptMessage cm;
+
 	/**
 	 * Creates server.
 	 * 
@@ -30,6 +36,14 @@ public class Server {
 	 */
 	public Server() throws IOException {
 		System.out.println("Server start");
+
+		try {
+			cm = new CryptMessage(new RSAEncryption("Server", "server", true));
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException
+				| InvalidKeySpecException | IOException e1) {
+			e1.printStackTrace();
+			System.exit(1);
+		}
 
 		try {
 			server = new ServerSocket(8080);
@@ -50,6 +64,17 @@ public class Server {
 		System.out.println("Server stop");
 	}
 
+	private byte[] recieveEncryptedMessage(Exchange ex) throws IOException {
+		byte[] pt1 = ex.recieveMessage();
+		byte[] pt2 = ex.recieveMessage();
+		
+		return recieveEncryptedMessage(pt1, pt2);
+	}
+
+	private byte[] recieveEncryptedMessage(byte[] aes, byte[] encry) {
+		return cm.recieveMessage(aes, encry);
+	}
+
 	/**
 	 * Creates new connection with new clients.
 	 */
@@ -60,17 +85,18 @@ public class Server {
 					Socket socket = server.accept();
 					Exchange ex = new Exchange(socket);
 
-					String name = new String(ex.recieveMessage(),
+					ex.sendMessage(cm.getPublicKey());
+
+					String name = new String(recieveEncryptedMessage(ex),
 							StandardCharsets.UTF_8);
 					PublicKey pubKey = null;
 					try {
 						pubKey = CryptMessage
-								.createPublicKey(ex.recieveMessage());
+								.createPublicKey(recieveEncryptedMessage(ex));
 					} catch (InvalidKeySpecException e) {
 						e.printStackTrace();
 					}
 
-					
 					addressBook.put(new Account(name, pubKey), ex);
 					setupListening(name, ex);
 					System.out.println("New connection from " + name + " "
@@ -127,7 +153,7 @@ public class Server {
 
 						String nameOther = new String(inMsg,
 								StandardCharsets.UTF_8);
-						
+
 						Account otherPerson = new Account(nameOther, null);
 						if (addressBook.containsKey(otherPerson)) {
 							addressBook.get(otherPerson).sendMessage(

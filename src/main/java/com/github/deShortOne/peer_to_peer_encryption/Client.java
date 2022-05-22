@@ -5,7 +5,19 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import com.baeldung.encryption.CryptMessage;
+import com.baeldung.encryption.RSAEncryption;
 
 public class Client extends Exchange {
 
@@ -18,6 +30,10 @@ public class Client extends Exchange {
 	 * Thread that listens to server.
 	 */
 	private Thread serverListener;
+
+	private PublicKey serverPubKey;
+	
+	private CryptMessage cm;
 
 	/**
 	 * Name + conversation page linked to it. Name should be class called Object
@@ -38,6 +54,15 @@ public class Client extends Exchange {
 		System.out.println("Client started " + name);
 		this.name = name;
 		this.mw = mw;
+		
+		try {
+			cm = new CryptMessage(new RSAEncryption(name, name, true));
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException
+				| InvalidKeySpecException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(1);
+		}
 		establishConnectionToServer();
 		listenToServer();
 	}
@@ -64,7 +89,8 @@ public class Client extends Exchange {
 	 * cannot find reciptent.
 	 * 
 	 * @param recipitent name of person to add
-	 * @return boolean if that name exists in server's database [currently doesn't work]
+	 * @return boolean if that name exists in server's database [currently
+	 *         doesn't work]
 	 * @throws IOException
 	 */
 	public boolean addFriend(String recipitent) throws IOException {
@@ -77,7 +103,8 @@ public class Client extends Exchange {
 
 		return true;
 
-		// Cannot recieve cause there's a thread that's already listening... TODO
+		// Cannot recieve cause there's a thread that's already listening...
+		// TODO
 //		System.out.println("Waiting to recieve"); // Not recieved???
 //		byte[] exist = super.recieveMessage();
 //		System.out.println("Recieved");
@@ -97,7 +124,8 @@ public class Client extends Exchange {
 	}
 
 	/**
-	 * Creates connection to server.
+	 * Creates connection to server. Receives public key, sends name and public
+	 * key using server's public key.
 	 * 
 	 * @throws IOException
 	 */
@@ -105,8 +133,32 @@ public class Client extends Exchange {
 		Socket socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
 		super.setSocket(socket);
 
-		super.sendMessage(name.getBytes());
-		super.sendMessage(new byte[3]);
+		try {
+			serverPubKey = CryptMessage.createPublicKey(super.recieveMessage());
+		} catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		try {
+			byte[][] msg;
+			
+			msg = CryptMessage.createMessage(name.getBytes(), serverPubKey);
+			
+			super.sendMessage(msg[0]);
+			super.sendMessage(msg[1]);
+			
+			msg = CryptMessage.createMessage(cm.getPublicKey(), serverPubKey);
+			super.sendMessage(msg[0]);
+			super.sendMessage(msg[1]);
+		
+		} catch (InvalidKeyException | NoSuchPaddingException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
