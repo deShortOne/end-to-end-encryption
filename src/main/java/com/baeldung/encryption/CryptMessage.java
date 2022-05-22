@@ -171,7 +171,7 @@ public class CryptMessage {
 				| NoSuchAlgorithmException | InvalidAlgorithmParameterException
 				| BadPaddingException | IllegalBlockSizeException e) {
 			e.printStackTrace();
-			return "_AESEncryption_fault_";
+			return "_AESEncryption_fault_".getBytes();
 		}
 	}
 
