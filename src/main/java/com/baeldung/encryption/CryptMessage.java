@@ -36,7 +36,7 @@ public class CryptMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String getName() {
 		return rsa.getName();
 	}
@@ -68,8 +68,8 @@ public class CryptMessage {
 	 * @return RSA encrypted version of AES keys, AES encrypted version of
 	 *         message
 	 */
-	public static byte[][] createMessage(byte[] clearMessage, PublicKey pubKey)
-			throws InvalidKeyException, NoSuchPaddingException {
+	public static byte[][] createMessage(byte[] clearMessage,
+			PublicKey pubKey) {
 
 		try {
 			SecretKey key = AESEncryption.generateKey(256);
@@ -93,6 +93,10 @@ public class CryptMessage {
 		} catch (BadPaddingException e) {
 			e.printStackTrace();
 		} catch (InvalidAlgorithmParameterException e) {
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -167,9 +171,9 @@ public class CryptMessage {
 
 		try {
 			return AESEncryption.decrypt(algorithm, cipherMessage, key, iv);
-		} catch (NoSuchPaddingException
-				| NoSuchAlgorithmException | InvalidAlgorithmParameterException
-				| BadPaddingException | IllegalBlockSizeException e) {
+		} catch (NoSuchPaddingException | NoSuchAlgorithmException
+				| InvalidAlgorithmParameterException | BadPaddingException
+				| IllegalBlockSizeException e) {
 			e.printStackTrace();
 			return "_AESEncryption_fault_".getBytes();
 		}

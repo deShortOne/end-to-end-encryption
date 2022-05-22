@@ -2,6 +2,8 @@ package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.security.PublicKey;
 
+import com.baeldung.encryption.CryptMessage;
+
 /**
  * Information about this person.
  * 
@@ -24,6 +26,10 @@ public class Account {
 
 	public PublicKey getPublicKey() {
 		return pubKey;
+	}
+	
+	public byte[][] encryptMessage(byte[] message) {
+		return CryptMessage.createMessage(message, pubKey);
 	}
 	
 	@Override

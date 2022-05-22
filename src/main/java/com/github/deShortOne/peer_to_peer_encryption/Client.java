@@ -31,7 +31,7 @@ public class Client extends Exchange {
 	 */
 	private Thread serverListener;
 
-	private PublicKey serverPubKey;
+	private Account serverConnection;
 	
 	private CryptMessage cm;
 
@@ -102,17 +102,6 @@ public class Client extends Exchange {
 				+ " has recieved your friend request\nWait for them to accept!");
 
 		return true;
-
-		// Cannot recieve cause there's a thread that's already listening...
-		// TODO
-//		System.out.println("Waiting to recieve"); // Not recieved???
-//		byte[] exist = super.recieveMessage();
-//		System.out.println("Recieved");
-//		
-//		// decrypt
-//		String str = new String(exist, StandardCharsets.UTF_8);
-//		
-//		return str.equals(MessageType.YES.name());
 	}
 
 	/**
@@ -134,7 +123,7 @@ public class Client extends Exchange {
 		super.setSocket(socket);
 
 		try {
-			serverPubKey = CryptMessage.createPublicKey(super.recieveMessage());
+			serverConnection = new Account("", CryptMessage.createPublicKey(super.recieveMessage()));
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -142,22 +131,9 @@ public class Client extends Exchange {
 			e.printStackTrace();
 			System.exit(1);
 		}
-
-		try {
-			byte[][] msg;
-			
-			msg = CryptMessage.createMessage(name.getBytes(), serverPubKey);
-			
-			super.sendMessage(msg[0]);
-			super.sendMessage(msg[1]);
-			
-			msg = CryptMessage.createMessage(cm.getPublicKey(), serverPubKey);
-			super.sendMessage(msg[0]);
-			super.sendMessage(msg[1]);
 		
-		} catch (InvalidKeyException | NoSuchPaddingException e) {
-			e.printStackTrace();
-		}
+		super.sendMessage(serverConnection.encryptMessage(name.getBytes()));
+		super.sendMessage(serverConnection.encryptMessage(cm.getPublicKey()));
 
 	}
 
