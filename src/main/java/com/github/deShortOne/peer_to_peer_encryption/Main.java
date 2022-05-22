@@ -1,5 +1,7 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
+import com.baeldung.encryption.CryptMessage;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -16,6 +18,10 @@ public class Main extends Application {
 		Scene startScreenScene = new Scene(StartScreen.loginPage());
 		stage.setScene(startScreenScene);
 		stage.show();
+	}
+	
+	public void mainScreen(CryptMessage cryptMessage) {
+		MessageWindow mw = new MessageWindow();
 	}
 	
 	public void updateScene(Scene scene) {

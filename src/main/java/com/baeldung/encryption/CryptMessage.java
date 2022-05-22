@@ -36,6 +36,10 @@ public class CryptMessage {
 			e.printStackTrace();
 		}
 	}
+	
+	public String getName() {
+		return rsa.getName();
+	}
 
 	public byte[] getPublicKey() {
 		return rsa.getPublicKey().getEncoded();

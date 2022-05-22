@@ -37,9 +37,6 @@ public class StartScreen {
 
 	public static String fileLoc = "files\\accounts.csv";
 
-	// should be non-static?
-	private static RSAEncryption rsaEncryption;
-
 	public static Parent loginPage() {
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
@@ -80,10 +77,11 @@ public class StartScreen {
 					usernameInput.getText(), passwordInput.getText());
 			if (goodInput) {
 				try {
-					rsaEncryption = new RSAEncryption(usernameInput.getText(),
-							passwordInput.getText(), false);
+					RSAEncryption rsaEncryption = new RSAEncryption(
+							usernameInput.getText(), passwordInput.getText(),
+							false);
 					outputMsg.setText("Success!");
-					moveToNextWindow();
+					moveToNextWindow(rsaEncryption);
 				} catch (NoSuchAlgorithmException | InvalidKeySpecException
 						| IOException | NoSuchPaddingException e1) {
 					e1.printStackTrace();
@@ -109,14 +107,15 @@ public class StartScreen {
 						usernameInput.getText(), passwordInput.getText());
 
 				if (goodInput) {
-					rsaEncryption = new RSAEncryption(usernameInput.getText(),
-							passwordInput.getText(), true);
-					moveToNextWindow();
+					RSAEncryption rsaEncryption = new RSAEncryption(
+							usernameInput.getText(), passwordInput.getText(),
+							true);
+					moveToNextWindow(rsaEncryption);
 					outputMsg.setText("Sign up success!");
 				} else {
-					if (blankInput(usernameInput.getText())) 
+					if (blankInput(usernameInput.getText()))
 						outputMsg.setText("Username cannot be empty");
-					else if (blankInput(passwordInput.getText())) 
+					else if (blankInput(passwordInput.getText()))
 						outputMsg.setText("Password cannot be empty");
 					else
 						outputMsg.setText("Username already taken");
@@ -132,8 +131,11 @@ public class StartScreen {
 		return grid;
 	}
 
-	public static void moveToNextWindow() {
+	public static void moveToNextWindow(RSAEncryption rsaEncryption) {
 		CryptMessage cm = new CryptMessage(rsaEncryption);
+		
+		
+		
 		cm.getClass();
 	}
 
@@ -173,7 +175,7 @@ public class StartScreen {
 
 		if (blankInput(username) || blankInput(password))
 			return false;
-		
+
 		String hashUsername = calculateUsernameHash(username);
 		if (checkForDuplicate(hashUsername))
 			return false;
