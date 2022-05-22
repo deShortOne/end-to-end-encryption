@@ -5,22 +5,23 @@ import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
+
+import com.baeldung.encryption.CryptMessage;
 
 public class Server {
 
 	/**
 	 * Name + connection of that user. Name should be replaced with contact.
 	 */
-	private HashMap<String, Exchange> addressBook = new HashMap<>();
+	private HashMap<Account, Exchange> addressBook = new HashMap<>();
 
 	private ServerSocket server;
 
 	private Thread newConnections;
 	private Thread listeningToCurrentConnections;
-
-	// To be deleted FIXME
-	public static boolean autoAddName = false;
 
 	/**
 	 * Creates server.
@@ -61,20 +62,16 @@ public class Server {
 
 					String name = new String(ex.recieveMessage(),
 							StandardCharsets.UTF_8);
-
-					if (autoAddName) {
-						for (String names : addressBook.keySet()) {
-							addressBook.get(names).sendMessage(name.getBytes());
-							addressBook.get(names).sendMessage(
-									("Say hi to " + name + "!").getBytes());
-
-							ex.sendMessage(names.getBytes());
-							ex.sendMessage(
-									("Say hi to " + names + "!").getBytes());
-						}
+					PublicKey pubKey = null;
+					try {
+						pubKey = CryptMessage
+								.createPublicKey(ex.recieveMessage());
+					} catch (InvalidKeySpecException e) {
+						e.printStackTrace();
 					}
 
-					addressBook.put(name, ex);
+					
+					addressBook.put(new Account(name, pubKey), ex);
 					setupListening(name, ex);
 					System.out.println("New connection from " + name + " "
 							+ addressBook.size());
@@ -113,11 +110,14 @@ public class Server {
 					// Decode msgType using Server's private key
 					String sendTo = new String(msgType, StandardCharsets.UTF_8);
 
-					if (addressBook.containsKey(sendTo)) {
+					// need to find way to override containsKey so that it will
+					// find name instead of comparing objects
+					Account toFind = new Account(sendTo, null);
+					if (addressBook.containsKey(toFind)) {
 						// The person's name
-						addressBook.get(sendTo).sendMessage(name.getBytes());
+						addressBook.get(toFind).sendMessage(name.getBytes());
 						// name will need to be encrypted
-						addressBook.get(sendTo).sendMessage(inMsg);
+						addressBook.get(toFind).sendMessage(inMsg);
 
 						System.out.printf("%s send message to %s: %s%n", name,
 								sendTo,
@@ -127,10 +127,12 @@ public class Server {
 
 						String nameOther = new String(inMsg,
 								StandardCharsets.UTF_8);
-						if (addressBook.containsKey(nameOther)) {
-							addressBook.get(nameOther).sendMessage(
+						
+						Account otherPerson = new Account(nameOther, null);
+						if (addressBook.containsKey(otherPerson)) {
+							addressBook.get(otherPerson).sendMessage(
 									MessageType.NEWFRIEND.name().getBytes());
-							addressBook.get(nameOther)
+							addressBook.get(otherPerson)
 									.sendMessage(name.getBytes()); // give pub
 																	// key
 

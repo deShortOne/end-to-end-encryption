@@ -106,6 +106,7 @@ public class Client extends Exchange {
 		super.setSocket(socket);
 
 		super.sendMessage(name.getBytes());
+		super.sendMessage(new byte[3]);
 	}
 
 	/**
@@ -122,13 +123,6 @@ public class Client extends Exchange {
 
 					String sender = new String(senderB, StandardCharsets.UTF_8);
 					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
-
-					if (Server.autoAddName && !messages.containsKey(sender)) {
-						// TODO add new person into MessageWindow
-						messages.put(sender, new ConversationPage());
-						System.out.println("New person!");
-						mw.addContact(sender);
-					}
 
 					if (messages.containsKey(sender)) {
 						messages.get(sender).addText(msg);
