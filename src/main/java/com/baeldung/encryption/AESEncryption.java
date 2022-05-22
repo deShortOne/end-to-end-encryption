@@ -50,7 +50,7 @@ public class AESEncryption {
 	 * @throws BadPaddingException
 	 * @throws IllegalBlockSizeException
 	 */
-	public static byte[] encrypt(String algorithm, String input, SecretKey key,
+	public static byte[] encrypt(String algorithm, byte[] input, SecretKey key,
 			IvParameterSpec iv)
 			throws NoSuchAlgorithmException, NoSuchPaddingException,
 			InvalidKeyException, InvalidAlgorithmParameterException,
@@ -58,7 +58,7 @@ public class AESEncryption {
 
 		Cipher cipher = Cipher.getInstance(algorithm);
 		cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-		byte[] cipherText = cipher.doFinal(input.getBytes());
+		byte[] cipherText = cipher.doFinal(input);
 		return cipherText;
 	}
 
@@ -77,7 +77,7 @@ public class AESEncryption {
 	 * @throws BadPaddingException
 	 * @throws IllegalBlockSizeException
 	 */
-	public static String decrypt(String algorithm, byte[] cipherText,
+	public static byte[] decrypt(String algorithm, byte[] cipherText,
 			SecretKey key, IvParameterSpec iv)
 			throws NoSuchPaddingException, NoSuchAlgorithmException,
 			InvalidAlgorithmParameterException, InvalidKeyException,
@@ -86,7 +86,7 @@ public class AESEncryption {
 		Cipher cipher = Cipher.getInstance(algorithm);
 		cipher.init(Cipher.DECRYPT_MODE, key, iv);
 		byte[] plainText = cipher.doFinal(cipherText);
-		return new String(plainText);
+		return plainText;
 	}
 
 	// encryption and decryption of file is basically the same

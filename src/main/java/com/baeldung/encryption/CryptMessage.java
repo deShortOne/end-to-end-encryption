@@ -55,7 +55,7 @@ public class CryptMessage {
 	}
 
 	/**
-	 * Returned byte[] should be sent to reciever
+	 * Returned byte[][] should be sent to reciever
 	 * 
 	 * @param clearMessage
 	 * @param pubKey
@@ -68,10 +68,8 @@ public class CryptMessage {
 	 * @return RSA encrypted version of AES keys, AES encrypted version of
 	 *         message
 	 */
-	public static byte[][] sendMessage(String clearMessage, PublicKey pubKey)
-			throws InvalidKeyException, NoSuchPaddingException,
-			IllegalBlockSizeException, BadPaddingException,
-			InvalidAlgorithmParameterException {
+	public static byte[][] createMessage(byte[] clearMessage, PublicKey pubKey)
+			throws InvalidKeyException, NoSuchPaddingException {
 
 		try {
 			SecretKey key = AESEncryption.generateKey(256);
@@ -90,10 +88,17 @@ public class CryptMessage {
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("AES Encryption algorithm incorrect");
 			return null;
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (InvalidAlgorithmParameterException e) {
+			e.printStackTrace();
 		}
+		return null;
 	}
 
-	public String recieveMessage(byte[] cipherBase, byte[] cipherMessage) {
+	public byte[] recieveMessage(byte[] cipherBase, byte[] cipherMessage) {
 
 		try {
 			String base = rsa.decrypt(cipherBase);
@@ -134,7 +139,7 @@ public class CryptMessage {
 	 * @throws BadPaddingException
 	 * @throws InvalidAlgorithmParameterException
 	 */
-	public static String recieveMessage(byte[] cipherBase, byte[] cipherMessage,
+	public static byte[] recieveMessage(byte[] cipherBase, byte[] cipherMessage,
 			PrivateKey priKey) throws InvalidKeyException {
 
 		String base;
@@ -142,7 +147,7 @@ public class CryptMessage {
 			base = RSAEncryption.decrypt(cipherBase, priKey);
 		} catch (IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
-			return "_RSAEncryption_fault_";
+			return "_RSAEncryption_fault_".getBytes();
 		}
 
 		StringBuilder sb = new StringBuilder();
