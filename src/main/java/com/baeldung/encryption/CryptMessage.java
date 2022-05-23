@@ -1,5 +1,6 @@
 package com.baeldung.encryption;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -11,6 +12,7 @@ import java.security.PublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -65,11 +67,10 @@ public class CryptMessage {
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
 	 * @throws InvalidAlgorithmParameterException
-	 * @return RSA encrypted version of AES keys, AES encrypted version of
+	 * @return RSA encrypted version of AES keys and AES encrypted version of
 	 *         message
 	 */
-	public static byte[][] createMessage(byte[] clearMessage,
-			PublicKey pubKey) {
+	public static byte[] createMessage(byte[] clearMessage, PublicKey pubKey) {
 
 		try {
 			SecretKey key = AESEncryption.generateKey(256);
@@ -84,7 +85,41 @@ public class CryptMessage {
 			byte[] encryptedMsg = AESEncryption.encrypt(algorithm, clearMessage,
 					key, iv);
 
-			return new byte[][] { base, encryptedMsg };
+			// I understand that it's highly likely they are always the same
+			// length
+			// i.e. base length will never change and encryptedMsg length will
+			// never change
+			// but this is just to cover all the bases.
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+			// will need to simplify.../ use proper methods
+			if (base.length > 127) {
+				outputStream.write(-1);
+
+				String temp = Integer.toString(base.length);
+				for (char c : temp.toCharArray()) {
+					outputStream.write(c - '0');
+				}
+				outputStream.write(-1);
+			} else {
+				outputStream.write(base.length);
+			}
+			if (encryptedMsg.length > 127) {
+				outputStream.write(-1);
+
+				String temp = Integer.toString(base.length);
+				for (char c : temp.toCharArray()) {
+					outputStream.write(c - '0');
+				}
+				outputStream.write(-1);
+			} else {
+				outputStream.write(encryptedMsg.length);
+			}
+
+			outputStream.write(base);
+			outputStream.write(encryptedMsg);
+
+			return outputStream.toByteArray();
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("AES Encryption algorithm incorrect");
 		} catch (IllegalBlockSizeException e) {
@@ -97,11 +132,60 @@ public class CryptMessage {
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			// From ByteArrayOutputStream?
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
 
-	public byte[] recieveMessage(byte[] cipherBase, byte[] cipherMessage) {
+	public byte[] recieveMessage(byte[] cipherIn) {
+
+		int n = 0;
+		byte[] cipherBase;
+
+		if (cipherIn[n] == -1) {
+			n = 1;
+			int num = 0;
+			do {
+				num *= 10;
+				num += cipherIn[n];
+			} while (cipherIn[++n] != -1);
+			n += 1;
+
+			cipherBase = new byte[num];
+		} else {
+			cipherBase = new byte[cipherIn[n++]];
+		}
+
+		byte[] cipherMessage;
+
+		if (cipherIn[n] == -1) {
+			n = 1;
+			int num = 0;
+			do {
+				num *= 10;
+				num += cipherIn[n];
+			} while (cipherIn[++n] != -1);
+			n += 1;
+
+			cipherMessage = new byte[num];
+		} else {
+			cipherMessage = new byte[cipherIn[n++]];
+		}
+		
+		for (int size = 0; size < cipherBase.length; size++, n++) {
+			cipherBase[size] = cipherIn[n];
+		}
+		
+		for (int size = 0; size < cipherMessage.length; size++, n++) {
+			cipherMessage[size] = cipherIn[n];
+		}
+
+		if (n != cipherIn.length)
+			throw new IllegalStateException("Incorrect message size");
 
 		try {
 			String base = rsa.decrypt(cipherBase);

@@ -40,9 +40,15 @@ public class CryptMessageTest {
 		CryptMessage cm = new CryptMessage(friend1);
 
 		String msg = "HI";
-		byte[][] sentMessage = CryptMessage.createMessage(msg.getBytes(), friend1.getPublicKey());
-		String recievedMessage = new String(cm.recieveMessage(sentMessage[0],
-				sentMessage[1]), StandardCharsets.UTF_8);
+		byte[] sentMessage = CryptMessage.createMessage(msg.getBytes(), friend1.getPublicKey());
+		
+		Assertions.assertNotNull(sentMessage);
+		
+		byte[] asdf = cm.recieveMessage(sentMessage);
+		
+		Assertions.assertNotNull(asdf);
+		
+		String recievedMessage = new String(asdf, StandardCharsets.UTF_8);
 
 		Assertions.assertEquals(msg, recievedMessage);
 	}
