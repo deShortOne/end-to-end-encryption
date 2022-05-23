@@ -67,7 +67,7 @@ public class Server {
 	private byte[] recieveEncryptedMessage(Exchange ex) throws IOException {
 		byte[] pt1 = ex.recieveMessage();
 		byte[] pt2 = ex.recieveMessage();
-		
+
 		return recieveEncryptedMessage(pt1, pt2);
 	}
 
@@ -97,8 +97,9 @@ public class Server {
 						e.printStackTrace();
 					}
 
-					addressBook.put(new Account(name, pubKey), ex);
-					setupListening(name, ex);
+					Account acc = new Account(name, pubKey);
+					addressBook.put(acc, ex);
+					setupListening(acc, ex);
 					System.out.println("New connection from " + name + " "
 							+ addressBook.size());
 
@@ -119,10 +120,10 @@ public class Server {
 	/**
 	 * Listens for client.
 	 * 
-	 * @param name name of user of client
+	 * @param acc name of user of client
 	 * @param ex
 	 */
-	private void setupListening(String name, Exchange ex) {
+	private void setupListening(Account acc, Exchange ex) {
 		listeningToCurrentConnections = new Thread(() -> {
 			while (true)
 				try {
@@ -141,12 +142,13 @@ public class Server {
 					Account toFind = new Account(sendTo, null);
 					if (addressBook.containsKey(toFind)) {
 						// The person's name
-						addressBook.get(toFind).sendMessage(name.getBytes());
+						addressBook.get(toFind)
+								.sendMessage(acc.getName().getBytes());
 						// name will need to be encrypted
 						addressBook.get(toFind).sendMessage(inMsg);
 
-						System.out.printf("%s send message to %s: %s%n", name,
-								sendTo,
+						System.out.printf("%s send message to %s: %s%n",
+								acc.getName(), sendTo,
 								new String(inMsg, StandardCharsets.UTF_8));
 					} else if (sendTo.equals(MessageType.NEWFRIEND.name())) {
 						// decrypt inMsg to find person
@@ -156,13 +158,27 @@ public class Server {
 
 						Account otherPerson = new Account(nameOther, null);
 						if (addressBook.containsKey(otherPerson)) {
-							addressBook.get(otherPerson).sendMessage(
+							Exchange exOther = addressBook.get(otherPerson);
+							exOther.sendMessage(
 									MessageType.NEWFRIEND.name().getBytes());
-							addressBook.get(otherPerson)
-									.sendMessage(name.getBytes()); // give pub
-																	// key
+							exOther.sendMessage(acc.getName().getBytes());
+							exOther.sendMessage(
+									acc.getPublicKey().getEncoded());
+							// give pub key
 
-//							ex.sendMessage("YES".getBytes());
+							ex.sendMessage(
+									MessageType.NEWFRIEND.name().getBytes());
+							ex.sendMessage(otherPerson.getName().getBytes());
+
+							// Very poor implementation but will have to think
+							// of another way another time
+							Account aOther = null;
+							for (Account a : addressBook.keySet()) {
+								if (a.equals(otherPerson)) {
+									aOther = a;
+								}
+							}
+							ex.sendMessage(aOther.getPublicKey().getEncoded());
 
 						} else {
 							// Person no exist, so communicate that

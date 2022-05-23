@@ -44,7 +44,7 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	static String name = "B";
+	static String name = "A";
 
 	/**
 	 * For running when called from main.
@@ -183,10 +183,7 @@ public class MessageWindow extends Application {
 		Button b = new Button("Send friend request");
 		b.setOnAction(e -> {
 			try {
-				boolean exist = client.addFriend(name.getText());
-				if (exist) {
-					addContact(name.getText());
-				}
+				client.addFriend(name.getText());
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}

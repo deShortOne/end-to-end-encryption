@@ -32,14 +32,14 @@ public class Client extends Exchange {
 	private Thread serverListener;
 
 	private Account serverConnection;
-	
+
 	private CryptMessage cm;
 
 	/**
 	 * Name + conversation page linked to it. Name should be class called Object
 	 * which holds other information like public key
 	 */
-	private HashMap<String, ConversationPage> messages = new HashMap<>();
+	private HashMap<Account, ConversationPage> messages = new HashMap<>();
 
 	private MessageWindow mw;
 
@@ -54,7 +54,7 @@ public class Client extends Exchange {
 		System.out.println("Client started " + name);
 		this.name = name;
 		this.mw = mw;
-		
+
 		try {
 			cm = new CryptMessage(new RSAEncryption(name, name, true));
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException
@@ -74,14 +74,14 @@ public class Client extends Exchange {
 	 * @throws IOException
 	 */
 	public void sendMessage(String recipetent, String msg) throws IOException {
-		messages.get(recipetent).addText(msg);
+		messages.get(new Account(recipetent, null)).addText(msg);
 		// TODO Encrypt it!
 		super.sendMessage(recipetent.getBytes());
 		super.sendMessage(msg.getBytes());
 	}
 
 	public ConversationPage getMessages(String name) {
-		return messages.get(name);
+		return messages.get(new Account(name, null));
 	}
 
 	/**
@@ -89,19 +89,11 @@ public class Client extends Exchange {
 	 * cannot find reciptent.
 	 * 
 	 * @param recipitent name of person to add
-	 * @return boolean if that name exists in server's database [currently
-	 *         doesn't work]
 	 * @throws IOException
 	 */
-	public boolean addFriend(String recipitent) throws IOException {
+	public void addFriend(String recipitent) throws IOException {
 		super.sendMessage(MessageType.NEWFRIEND.name().getBytes());
 		super.sendMessage(recipitent.getBytes());
-
-		messages.put(recipitent, new ConversationPage());
-		messages.get(recipitent).addText(recipitent
-				+ " has recieved your friend request\nWait for them to accept!");
-
-		return true;
 	}
 
 	/**
@@ -123,7 +115,8 @@ public class Client extends Exchange {
 		super.setSocket(socket);
 
 		try {
-			serverConnection = new Account("", CryptMessage.createPublicKey(super.recieveMessage()));
+			serverConnection = new Account("",
+					CryptMessage.createPublicKey(super.recieveMessage()));
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -131,7 +124,7 @@ public class Client extends Exchange {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
+
 		super.sendMessage(serverConnection.encryptMessage(name.getBytes()));
 		super.sendMessage(serverConnection.encryptMessage(cm.getPublicKey()));
 
@@ -152,14 +145,40 @@ public class Client extends Exchange {
 					String sender = new String(senderB, StandardCharsets.UTF_8);
 					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
 
-					if (messages.containsKey(sender)) {
-						messages.get(sender).addText(msg);
+					Account accToFind = new Account(sender, null);
+					if (messages.containsKey(accToFind)) {
+						messages.get(accToFind).addText(msg);
 					} else if (sender.equals(MessageType.NEWFRIEND.name())) {
-						messages.put(msg, new ConversationPage());
-						messages.get(msg).addText(msg
-								+ " wants to be your friend!\nReply to accept!");
-						System.out.println("New person!");
-						mw.addContact(msg);
+						PublicKey pubKey = null;
+
+						try {
+							pubKey = CryptMessage
+									.createPublicKey(super.recieveMessage());
+						} catch (InvalidKeySpecException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						if (pubKey == null) {
+							System.err.println("Invalid pubkey>>>>>>>>>>>>>>>>>>>.");
+							return;
+						}
+
+						Account acc = new Account(msg, pubKey);
+						if (messages.containsKey(accToFind)) {
+							messages.remove(accToFind);
+							messages.put(acc, new ConversationPage());
+							messages.get(acc).addText(
+									msg + " has recieved your invite!");
+							System.out.println(name + " contains!");
+						} else {
+							messages.put(acc, new ConversationPage());
+							messages.get(acc).addText(msg
+									+ " wants to be your friend!\nReply to accept!");
+							System.out.println("New person!");
+							mw.addContact(msg);
+						}
+
 					}
 
 				} catch (IOException e) {
