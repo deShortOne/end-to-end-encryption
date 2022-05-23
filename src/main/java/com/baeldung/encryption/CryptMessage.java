@@ -12,7 +12,6 @@ import java.security.PublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
@@ -107,7 +106,7 @@ public class CryptMessage {
 			if (encryptedMsg.length > 127) {
 				outputStream.write(-1);
 
-				String temp = Integer.toString(base.length);
+				String temp = Integer.toString(encryptedMsg.length);
 				for (char c : temp.toCharArray()) {
 					outputStream.write(c - '0');
 				}
@@ -163,7 +162,7 @@ public class CryptMessage {
 		byte[] cipherMessage;
 
 		if (cipherIn[n] == -1) {
-			n = 1;
+			n += 1;
 			int num = 0;
 			do {
 				num *= 10;
@@ -226,6 +225,7 @@ public class CryptMessage {
 	 * @throws BadPaddingException
 	 * @throws InvalidAlgorithmParameterException
 	 */
+	@Deprecated
 	public static byte[] recieveMessage(byte[] cipherBase, byte[] cipherMessage,
 			PrivateKey priKey) throws InvalidKeyException {
 

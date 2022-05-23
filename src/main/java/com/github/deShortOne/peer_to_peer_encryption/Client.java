@@ -176,7 +176,7 @@ public class Client extends Exchange {
 							messages.get(acc).addText(msg
 									+ " wants to be your friend!\nReply to accept!");
 							System.out.println("New person!");
-							mw.addContact(msg);
+							mw.addContact(acc);
 						}
 
 					}

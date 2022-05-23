@@ -65,14 +65,13 @@ public class Server {
 	}
 
 	private byte[] recieveEncryptedMessage(Exchange ex) throws IOException {
-		byte[] pt1 = ex.recieveMessage();
-		byte[] pt2 = ex.recieveMessage();
+		byte[] encryptedMsg = ex.recieveMessage();
 
-		return recieveEncryptedMessage(pt1, pt2);
+		return recieveEncryptedMessage(encryptedMsg);
 	}
 
-	private byte[] recieveEncryptedMessage(byte[] aes, byte[] encry) {
-		return cm.recieveMessage(aes, encry);
+	private byte[] recieveEncryptedMessage(byte[] encryptedMsg) {
+		return cm.recieveMessage(encryptedMsg);
 	}
 
 	/**
