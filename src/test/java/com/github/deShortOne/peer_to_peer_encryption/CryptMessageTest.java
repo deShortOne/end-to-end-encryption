@@ -3,6 +3,7 @@ package com.github.deShortOne.peer_to_peer_encryption;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -39,9 +40,15 @@ public class CryptMessageTest {
 		CryptMessage cm = new CryptMessage(friend1);
 
 		String msg = "HI";
-		byte[][] sentMessage = CryptMessage.createMessage(msg, friend1.getPublicKey());
-		String recievedMessage = cm.recieveMessage(sentMessage[0],
-				sentMessage[1]);
+		byte[] sentMessage = CryptMessage.createMessage(msg.getBytes(), friend1.getPublicKey());
+		
+		Assertions.assertNotNull(sentMessage);
+		
+		byte[] asdf = cm.recieveMessage(sentMessage);
+		
+		Assertions.assertNotNull(asdf);
+		
+		String recievedMessage = new String(asdf, StandardCharsets.UTF_8);
 
 		Assertions.assertEquals(msg, recievedMessage);
 	}

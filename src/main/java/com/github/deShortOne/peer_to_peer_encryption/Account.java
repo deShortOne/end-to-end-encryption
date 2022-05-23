@@ -28,7 +28,7 @@ public class Account {
 		return pubKey;
 	}
 	
-	public byte[][] encryptMessage(byte[] message) {
+	public byte[] encryptMessage(byte[] message) {
 		return CryptMessage.createMessage(message, pubKey);
 	}
 	

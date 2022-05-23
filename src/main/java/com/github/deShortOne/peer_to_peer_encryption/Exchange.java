@@ -66,12 +66,6 @@ public class Exchange {
 		output.write(message);
 	}
 	
-	protected void sendMessage(byte[][] message) throws IOException {
-		for (byte[] b : message) {
-			this.sendMessage(b);
-		}
-	}
-	
 	/**
 	 * Receive message from socket.
 	 * 
