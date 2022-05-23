@@ -87,7 +87,6 @@ public class CryptMessage {
 			return new byte[][] { base, encryptedMsg };
 		} catch (NoSuchAlgorithmException e) {
 			System.err.println("AES Encryption algorithm incorrect");
-			return null;
 		} catch (IllegalBlockSizeException e) {
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
@@ -227,7 +226,8 @@ public class CryptMessage {
 		IvParameterSpec iv = new IvParameterSpec(
 				Base64.getDecoder().decode(sb.toString()));
 
-		String clearMsg = AESEncryption.decrypt(algorithm, cipherFile, key, iv);
+		byte[] clearMsg = AESEncryption.decrypt(algorithm, cipherFile, key, iv);
+		clearMsg.clone();
 		return null;
 	}
 }
