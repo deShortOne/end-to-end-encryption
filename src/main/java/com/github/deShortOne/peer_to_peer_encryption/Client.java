@@ -73,10 +73,10 @@ public class Client extends Exchange {
 	 * @param msg
 	 * @throws IOException
 	 */
-	public void sendMessage(String recipetent, String msg) throws IOException {
-		messages.get(new Account(recipetent, null)).addText(msg);
+	public void sendMessage(Account recipetent, String msg) throws IOException {
+		messages.get(recipetent).addText(msg);
 		// TODO Encrypt it!
-		super.sendMessage(recipetent.getBytes());
+		super.sendMessage(recipetent.getName().getBytes());
 		super.sendMessage(msg.getBytes());
 	}
 

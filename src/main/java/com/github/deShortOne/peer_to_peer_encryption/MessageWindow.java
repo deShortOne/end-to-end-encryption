@@ -39,7 +39,7 @@ public class MessageWindow extends Application {
 
 	private TextField output;
 
-	private String currentTalkingToPerson;
+	private Account currentTalkingToPerson;
 
 	private VBox contactsListRoot;
 
@@ -148,7 +148,7 @@ public class MessageWindow extends Application {
 		double diameter = 30;
 		Button btn = new Button("+");
 		btn.setOnAction(e -> addNewFriend());
-		
+
 		btn.setShape(new Circle(diameter));
 		btn.setMinSize(diameter, diameter);
 		btn.setMaxSize(diameter, diameter);
@@ -159,24 +159,25 @@ public class MessageWindow extends Application {
 	}
 
 	// to be made private
-	public void addContact(String name) {
+	public void addContact(Account account) {
 		Platform.runLater(() -> {
-			Button b = new Button(name);
+			Button b = new Button(account.getName());
 			b.setOnAction(e -> {
-				setCurrContact(name);
+				setCurrContact(account);
 			});
 			contactsListRoot.getChildren().add(b);
 		});
 	}
 
-	private void setCurrContact(String name) {
-		inputoutputScroll.setContent(client.getMessages(name).getMessages());
-		currentTalkingToPerson = name;
+	private void setCurrContact(Account account) {
+		inputoutputScroll.setContent(
+				client.getMessages(account.getName()).getMessages());
+		currentTalkingToPerson = account;
 	}
-	
+
 	private void addNewFriend() {
 		Stage s0 = new Stage();
-		
+
 		VBox root = new VBox();
 		Label l = new Label("Type in name");
 		TextField name = new TextField();
@@ -189,13 +190,12 @@ public class MessageWindow extends Application {
 			}
 			s0.close();
 		});
-		
+
 		root.getChildren().addAll(l, name, b);
-		
-		
+
 		s0.setScene(new Scene(root));
 		s0.show();
-		
+
 		// TODO change modality to ensure friend request is sent
 	}
 }
