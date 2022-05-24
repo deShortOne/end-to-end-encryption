@@ -140,11 +140,22 @@ public class Server {
 					// find name instead of comparing objects
 					Account toFind = new Account(sendTo, null);
 					if (addressBook.containsKey(toFind)) {
+						Exchange exReci = addressBook.get(toFind);
+						Account out = null;
+						for (Account a : addressBook.keySet()) {
+							if (addressBook.get(a).equals(exReci)) {
+								out = a;
+							}
+						}
+						if (out == null) {
+							throw new IllegalStateException(
+									"account not found");
+						}
+
 						// The person's name
-						addressBook.get(toFind)
-								.sendMessage(acc.getName().getBytes());
+						exReci.sendMessage((acc.getName().getBytes()));
 						// name will need to be encrypted
-						addressBook.get(toFind).sendMessage(inMsg);
+						exReci.sendMessage(inMsg);
 
 						System.out.printf("%s send message to %s: %s%n",
 								acc.getName(), sendTo,
