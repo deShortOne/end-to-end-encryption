@@ -20,7 +20,7 @@ public class Server {
 	/**
 	 * Name + connection of that user. Name should be replaced with contact.
 	 */
-	private HashMap<String, Account> addressBook = new HashMap<>();
+	private HashMap<String, ServerAccount> addressBook = new HashMap<>();
 
 	private ServerSocket server;
 
@@ -105,7 +105,6 @@ public class Server {
 			}
 		});
 		newConnections.start();
-
 	}
 
 	/**
@@ -116,62 +115,9 @@ public class Server {
 	 */
 	private void setupListening(String name, Exchange ex,
 			ServerAccount account) {
-		listeningToCurrentConnections = new Thread(() -> {
-			while (true) {
-				try {
-					byte[] messageTypeOrNameOfRecipitent = ex.recieveMessage();
-					byte[] messageIn = ex.recieveMessage();
-					// Encrypted with recipients public key if message for
-					// reciptent
-					// Encrypted with server's public key if message for server,
-					// cause duh
-
-					// Decode msgType using Server's private key
-					String sendTo = new String(messageTypeOrNameOfRecipitent,
-							StandardCharsets.UTF_8);
-
-					if (addressBook.containsKey(sendTo)) {
-						ServerAccount recieveMessageAccount = (ServerAccount) addressBook
-								.get(sendTo);
-
-						// The person's name
-
-						System.out.printf("%s send message to %s: %s%n", name,
-								sendTo,
-								new String(messageIn, StandardCharsets.UTF_8));
-						recieveMessageAccount.sendMessage(name, messageIn);
-					} else if (sendTo.equals(MessageType.NEWFRIEND.name())) {
-						// decrypt inMsg to find person
-
-						String recieveRequestName = new String(messageIn,
-								StandardCharsets.UTF_8);
-
-						if (addressBook.containsKey(recieveRequestName)) {
-							// send to new friend request
-							ServerAccount receiveRequestAccount = (ServerAccount) addressBook
-									.get(recieveRequestName);
-
-							receiveRequestAccount.friendRequest(name,
-									account.getPublicKey().getEncoded());
-
-							// send requester information about new person
-							// TODO wait for request to be accepted
-							account.friendRequest(recieveRequestName,
-									receiveRequestAccount.getPublicKey()
-											.getEncoded());
-						}
-						// TODO if person no exist, so communicate that
-
-					} else {
-						System.out.println("Invalid user/ command");
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-					break;
-				}
-			}
-		});
-		listeningToCurrentConnections.start();
+		ServerListener sl = new ServerListener(name, ex, account, addressBook);
+		Thread t1 = new Thread(sl);
+		t1.start();
 	}
 
 	public static void main(String[] args) throws IOException {

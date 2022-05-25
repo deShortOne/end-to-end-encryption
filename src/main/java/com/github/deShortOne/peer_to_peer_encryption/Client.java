@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
@@ -55,7 +53,6 @@ public class Client {
 			cm = new CryptMessage(new RSAEncryption(name, name, true));
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException
 				| InvalidKeySpecException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -71,7 +68,6 @@ public class Client {
 	 */
 	public void sendMessage(String name, String msg) throws IOException {
 		ClientAccount recievingPerson = messages.get(name);
-		// recievingPerson.addMessage(msg);
 		recievingPerson.sendMessage(msg);
 	}
 
@@ -81,12 +77,14 @@ public class Client {
 
 	/**
 	 * Makes friend request to server and returns true, returns false if server
-	 * cannot find reciptent.
+	 * cannot find recipient.
 	 * 
 	 * @param recipitent name of person to add
 	 * @throws IOException
 	 */
 	public void addFriend(String recipitent) throws IOException {
+		messages.put(recipitent, null);
+		mw.addContact(recipitent);
 		serverConnection.sendFriendRequest(recipitent);
 	}
 

@@ -44,7 +44,7 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	static String name = "A";
+	static String name = "B";
 
 	/**
 	 * For running when called from main.

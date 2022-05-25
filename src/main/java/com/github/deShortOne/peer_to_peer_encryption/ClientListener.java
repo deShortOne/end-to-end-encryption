@@ -15,7 +15,7 @@ public class ClientListener implements Runnable {
 	private HashMap<String, ClientAccount> messages;
 
 	private MessageWindow mw;
-	
+
 	public ClientListener(ServerAccount serverConnection,
 			HashMap<String, ClientAccount> messages, MessageWindow mw) {
 		this.serverConnection = serverConnection;
@@ -30,53 +30,52 @@ public class ClientListener implements Runnable {
 				byte[] msgInTmpB = serverConnection.recieveMessage();
 
 				// decode both sender and msgInTmp
-
 				String sender = new String(senderB, StandardCharsets.UTF_8);
 				String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
 
 				if (messages.containsKey(sender)) {
 					messages.get(sender).addMessage(msg);
 				} else if (sender.equals(MessageType.NEWFRIEND.name())) {
-					PublicKey pubKey = null;
-
-					try {
-						pubKey = CryptMessage.createPublicKey(
-								serverConnection.recieveMessage());
-					} catch (InvalidKeySpecException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					if (pubKey == null) {
-						System.err
-								.println("Invalid pubkey>>>>>>>>>>>>>>>>>>>.");
-						return;
-					}
-
-					ClientAccount newAccount = new ClientAccount(msg, null,
-							new ConversationPage(), serverConnection);
-
-					if (messages.containsKey(msg)) {
-						messages.remove(msg);
-
-						messages.put(msg, newAccount);
-						messages.get(msg)
-								.addMessage(msg + " has recieved your invite!");
-//						System.out.println(name + " contains!");
-					} else {
-						messages.put(msg, newAccount);
-						messages.get(msg).addMessage(msg
-								+ " wants to be your friend!\nReply to accept!");
-						System.out.println("New person!");
-						mw.addContact(msg);
-					}
-
+					addFriend(msg);
 				}
 
 			} catch (IOException e) {
 				e.printStackTrace();
 				break;
 			}
+		}
+	}
+
+	private void addFriend(String nameOfOther) throws IOException {
+		PublicKey pubKey = null;
+
+		try {
+			pubKey = CryptMessage
+					.createPublicKey(serverConnection.recieveMessage());
+		} catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+		}
+
+		if (pubKey == null) {
+			System.err.println("Invalid pubkey>>>>>>>>>>>>>>>>>>>.");
+			return;
+		}
+
+		ClientAccount newAccount = new ClientAccount(nameOfOther, null,
+				new ConversationPage(), serverConnection);
+
+		if (messages.containsKey(nameOfOther)) {
+			// TODO move conversation page across
+			messages.remove(nameOfOther);
+
+			messages.put(nameOfOther, newAccount);
+			messages.get(nameOfOther)
+					.addMessage(nameOfOther + " has recieved your invite!");
+		} else {
+			messages.put(nameOfOther, newAccount);
+			messages.get(nameOfOther).addMessage(nameOfOther
+					+ " wants to be your friend!\nReply to accept!");
+			mw.addContact(nameOfOther);
 		}
 	}
 }
