@@ -29,8 +29,9 @@ public abstract class Account {
 		return ex;
 	}
 
-	public void sendMessage(byte[] msg) throws IOException {
-		ex.sendMessage(msg);
+	// TODO encrypt
+	public void sendMessage(byte[] message) throws IOException {
+		ex.sendMessage(message);
 	}
 
 	public byte[] encryptMessage(byte[] message) {
@@ -39,5 +40,9 @@ public abstract class Account {
 	
 	public void setExchange(Exchange exchange) {
 		this.ex = exchange;
+	}
+	
+	public byte[] recieveMessage() throws IOException {
+		return ex.recieveMessage();
 	}
 }

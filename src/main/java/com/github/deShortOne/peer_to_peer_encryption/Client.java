@@ -5,21 +5,17 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 import com.baeldung.encryption.CryptMessage;
 import com.baeldung.encryption.RSAEncryption;
 
-public class Client extends Exchange {
+public class Client {
 
 	/**
 	 * Name of user of the client.
@@ -39,7 +35,7 @@ public class Client extends Exchange {
 	 * Name + conversation page linked to it. Name should be class called Object
 	 * which holds other information like public key
 	 */
-	private HashMap<Account, ConversationPage> messages = new HashMap<>();
+	private HashMap<String, ClientAccount> messages = new HashMap<>();
 
 	private MessageWindow mw;
 
@@ -73,15 +69,17 @@ public class Client extends Exchange {
 	 * @param msg
 	 * @throws IOException
 	 */
-	public void sendMessage(Account recipetent, String msg) throws IOException {
-		messages.get(recipetent).addText(msg);
-		// TODO Encrypt it!
-		super.sendMessage(recipetent.getName().getBytes());
-		super.sendMessage(msg.getBytes());
+	public void sendMessage(String name, String msg) throws IOException {
+		ClientAccount recievingPerson = messages.get(name);
+		recievingPerson.addMessage(msg);
+
+		recievingPerson.sendMessage(name.getBytes());
+		recievingPerson.sendMessage(msg.getBytes());
+
 	}
 
 	public ConversationPage getMessages(String name) {
-		return messages.get(new Account(name, null));
+		return messages.get(name).getConversationPage();
 	}
 
 	/**
@@ -92,8 +90,8 @@ public class Client extends Exchange {
 	 * @throws IOException
 	 */
 	public void addFriend(String recipitent) throws IOException {
-		super.sendMessage(MessageType.NEWFRIEND.name().getBytes());
-		super.sendMessage(recipitent.getBytes());
+		serverConnection.sendMessage(MessageType.NEWFRIEND.name().getBytes());
+		serverConnection.sendMessage(recipitent.getBytes());
 	}
 
 	/**
@@ -112,11 +110,11 @@ public class Client extends Exchange {
 	 */
 	private void establishConnectionToServer() throws IOException {
 		Socket socket = new Socket(InetAddress.getLoopbackAddress(), 8080);
-		super.setSocket(socket);
+		Exchange ex = new Exchange(socket);
 
 		try {
-			serverConnection = new Account("",
-					CryptMessage.createPublicKey(super.recieveMessage()));
+			serverConnection = new ServerAccount(
+					CryptMessage.createPublicKey(ex.recieveMessage()), ex);
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -125,9 +123,8 @@ public class Client extends Exchange {
 			System.exit(1);
 		}
 
-		super.sendMessage(serverConnection.encryptMessage(name.getBytes()));
-		super.sendMessage(serverConnection.encryptMessage(cm.getPublicKey()));
-
+		serverConnection.sendMessage(name.getBytes());
+		serverConnection.sendMessage(cm.getPublicKey());
 	}
 
 	/**
@@ -137,46 +134,49 @@ public class Client extends Exchange {
 		serverListener = new Thread(() -> {
 			while (true) {
 				try {
-					byte[] senderB = super.recieveMessage();
-					byte[] msgInTmpB = super.recieveMessage();
+					byte[] senderB = serverConnection.recieveMessage();
+					byte[] msgInTmpB = serverConnection.recieveMessage();
 
 					// decode both sender and msgInTmp
 
 					String sender = new String(senderB, StandardCharsets.UTF_8);
 					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
 
-					Account accToFind = new Account(sender, null);
-					if (messages.containsKey(accToFind)) {
-						messages.get(accToFind).addText(msg);
+					if (messages.containsKey(sender)) {
+						messages.get(sender).addMessage(msg);
 					} else if (sender.equals(MessageType.NEWFRIEND.name())) {
 						PublicKey pubKey = null;
 
 						try {
-							pubKey = CryptMessage
-									.createPublicKey(super.recieveMessage());
+							pubKey = CryptMessage.createPublicKey(
+									serverConnection.recieveMessage());
 						} catch (InvalidKeySpecException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 
 						if (pubKey == null) {
-							System.err.println("Invalid pubkey>>>>>>>>>>>>>>>>>>>.");
+							System.err.println(
+									"Invalid pubkey>>>>>>>>>>>>>>>>>>>.");
 							return;
 						}
 
-						Account acc = new Account(msg, pubKey);
-						if (messages.containsKey(accToFind)) {
-							messages.remove(accToFind);
-							messages.put(acc, new ConversationPage());
-							messages.get(acc).addText(
+						ClientAccount newAccount = new ClientAccount(null,
+								new ConversationPage(), serverConnection.getExchange());
+
+						if (messages.containsKey(msg)) {
+							messages.remove(msg);
+
+							messages.put(msg, newAccount);
+							messages.get(msg).addMessage(
 									msg + " has recieved your invite!");
 							System.out.println(name + " contains!");
 						} else {
-							messages.put(acc, new ConversationPage());
-							messages.get(acc).addText(msg
+							messages.put(msg, newAccount);
+							messages.get(msg).addMessage(msg
 									+ " wants to be your friend!\nReply to accept!");
 							System.out.println("New person!");
-							mw.addContact(acc);
+							mw.addContact(msg);
 						}
 
 					}

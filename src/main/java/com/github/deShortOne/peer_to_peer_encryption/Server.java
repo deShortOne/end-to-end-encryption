@@ -20,7 +20,7 @@ public class Server {
 	/**
 	 * Name + connection of that user. Name should be replaced with contact.
 	 */
-	private HashMap<Account, Exchange> addressBook = new HashMap<>();
+	private HashMap<String, Account> addressBook = new HashMap<>();
 
 	private ServerSocket server;
 
@@ -96,9 +96,9 @@ public class Server {
 						e.printStackTrace();
 					}
 
-					Account acc = new Account(name, pubKey);
-					addressBook.put(acc, ex);
-					setupListening(acc, ex);
+					Account acc = new ServerAccount(pubKey, ex);
+					addressBook.put(name, acc);
+					setupListening(name, ex, acc);
 					System.out.println("New connection from " + name + " "
 							+ addressBook.size());
 
@@ -122,73 +122,53 @@ public class Server {
 	 * @param acc name of user of client
 	 * @param ex
 	 */
-	private void setupListening(Account acc, Exchange ex) {
+	private void setupListening(String name, Exchange ex, Account account) {
 		listeningToCurrentConnections = new Thread(() -> {
-			while (true)
+			while (true) {
 				try {
-					byte[] msgType = ex.recieveMessage();
-					byte[] inMsg = ex.recieveMessage();
+					byte[] messageTypeOrNameOfRecipitent = ex.recieveMessage();
+					byte[] messageIn = ex.recieveMessage();
 					// Encrypted with recipients public key if message for
 					// reciptent
 					// Encrypted with server's public key if message for server,
 					// cause duh
 
 					// Decode msgType using Server's private key
-					String sendTo = new String(msgType, StandardCharsets.UTF_8);
+					String sendTo = new String(messageTypeOrNameOfRecipitent, StandardCharsets.UTF_8);
 
-					// need to find way to override containsKey so that it will
-					// find name instead of comparing objects
-					Account toFind = new Account(sendTo, null);
-					if (addressBook.containsKey(toFind)) {
-						Exchange exReci = addressBook.get(toFind);
-						Account out = null;
-						for (Account a : addressBook.keySet()) {
-							if (addressBook.get(a).equals(exReci)) {
-								out = a;
-							}
-						}
-						if (out == null) {
-							throw new IllegalStateException(
-									"account not found");
-						}
+					if (addressBook.containsKey(sendTo)) {
+						Account recieveMessageAccount = addressBook.get(sendTo);
 
 						// The person's name
-						exReci.sendMessage((acc.getName().getBytes()));
+						recieveMessageAccount.sendMessage(name.getBytes());
 						// name will need to be encrypted
-						exReci.sendMessage(inMsg);
+						recieveMessageAccount.sendMessage(messageIn);
 
-						System.out.printf("%s send message to %s: %s%n",
-								acc.getName(), sendTo,
-								new String(inMsg, StandardCharsets.UTF_8));
+						System.out.printf("%s send message to %s: %s%n", name,
+								sendTo,
+								new String(messageIn, StandardCharsets.UTF_8));
 					} else if (sendTo.equals(MessageType.NEWFRIEND.name())) {
 						// decrypt inMsg to find person
 
-						String nameOther = new String(inMsg,
+						String recieveRequestName = new String(messageIn,
 								StandardCharsets.UTF_8);
 
-						Account otherPerson = new Account(nameOther, null);
-						if (addressBook.containsKey(otherPerson)) {
-							Exchange exOther = addressBook.get(otherPerson);
-							exOther.sendMessage(
+						if (addressBook.containsKey(recieveRequestName)) {
+							// send to new friend request
+							Account receiveRequestAccount = addressBook.get(recieveRequestName);
+							receiveRequestAccount.sendMessage(
 									MessageType.NEWFRIEND.name().getBytes());
-							exOther.sendMessage(acc.getName().getBytes());
-							exOther.sendMessage(
-									acc.getPublicKey().getEncoded());
+							receiveRequestAccount.sendMessage(name.getBytes());
+							receiveRequestAccount.sendMessage(
+									account.getPublicKey().getEncoded());
 							// give pub key
 
+							// send requester information about new person
+							// TODO wait for request to be accepted
 							ex.sendMessage(
 									MessageType.NEWFRIEND.name().getBytes());
-							ex.sendMessage(otherPerson.getName().getBytes());
-
-							// Very poor implementation but will have to think
-							// of another way another time
-							Account aOther = null;
-							for (Account a : addressBook.keySet()) {
-								if (a.equals(otherPerson)) {
-									aOther = a;
-								}
-							}
-							ex.sendMessage(aOther.getPublicKey().getEncoded());
+							ex.sendMessage(recieveRequestName.getBytes());
+							ex.sendMessage(receiveRequestAccount.getPublicKey().getEncoded());
 
 						} else {
 							// Person no exist, so communicate that
@@ -197,11 +177,11 @@ public class Server {
 					} else {
 						System.out.println("Invalid user/ command");
 					}
-
 				} catch (IOException e) {
 					e.printStackTrace();
 					break;
 				}
+			}
 		});
 		listeningToCurrentConnections.start();
 	}

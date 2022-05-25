@@ -14,4 +14,8 @@ public class ClientAccount extends Account {
 	public ConversationPage getConversationPage() {
 		return cp;
 	}
+	
+	public void addMessage(String message) {
+		cp.addText(message);
+	}
 }

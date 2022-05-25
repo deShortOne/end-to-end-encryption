@@ -39,7 +39,7 @@ public class MessageWindow extends Application {
 
 	private TextField output;
 
-	private Account currentTalkingToPerson;
+	private String currentTalkingToPerson;
 
 	private VBox contactsListRoot;
 
@@ -159,20 +159,20 @@ public class MessageWindow extends Application {
 	}
 
 	// to be made private
-	public void addContact(Account account) {
+	public void addContact(String otherPerson) {
 		Platform.runLater(() -> {
-			Button b = new Button(account.getName());
+			Button b = new Button(otherPerson);
 			b.setOnAction(e -> {
-				setCurrContact(account);
+				setCurrContact(otherPerson);
 			});
 			contactsListRoot.getChildren().add(b);
 		});
 	}
 
-	private void setCurrContact(Account account) {
+	private void setCurrContact(String otherPerson) {
 		inputoutputScroll.setContent(
-				client.getMessages(account.getName()).getMessages());
-		currentTalkingToPerson = account;
+				client.getMessages(otherPerson).getMessages());
+		currentTalkingToPerson = otherPerson;
 	}
 
 	private void addNewFriend() {
