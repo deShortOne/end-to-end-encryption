@@ -1,5 +1,6 @@
 package com.github.deShortOne.peer_to_peer_encryption;
 
+import java.io.IOException;
 import java.security.PublicKey;
 
 import com.baeldung.encryption.CryptMessage;
@@ -10,38 +11,33 @@ import com.baeldung.encryption.CryptMessage;
  * @author deShortOne
  *
  */
-public class Account {
+public abstract class Account {
 
-	private String name;
 	private PublicKey pubKey;
+	private Exchange ex;
 
-	public Account(String name, PublicKey publicKey) {
-		this.name = name;
+	public Account(PublicKey publicKey, Exchange exchange) {
 		pubKey = publicKey;
-	}
-
-	public String getName() {
-		return name;
+		ex = exchange;
 	}
 
 	public PublicKey getPublicKey() {
 		return pubKey;
 	}
-	
+
+	public Exchange getExchange() {
+		return ex;
+	}
+
+	public void sendMessage(byte[] msg) throws IOException {
+		ex.sendMessage(msg);
+	}
+
 	public byte[] encryptMessage(byte[] message) {
 		return CryptMessage.createMessage(message, pubKey);
 	}
 	
-	@Override
-	public int hashCode() {
-		return name.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if (o == null) {
-			return false;
-		}
-		return name.equals(((Account) o).getName());
+	public void setExchange(Exchange exchange) {
+		this.ex = exchange;
 	}
 }
