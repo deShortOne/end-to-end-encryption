@@ -37,7 +37,7 @@ public class ServerAccount extends Account {
 	}
 
 	/**
-	 * Sends message to recipitent or client.
+	 * Sends message to recipient or client.
 	 * TODO encrypt sender
 	 * 
 	 * @param sender

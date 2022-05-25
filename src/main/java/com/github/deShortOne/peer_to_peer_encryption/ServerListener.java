@@ -7,14 +7,12 @@ import java.util.HashMap;
 public class ServerListener implements Runnable {
 
 	private String name;
-	private Exchange ex;
 	private HashMap<String, ServerAccount> addressBook;
 	private ServerAccount account;
 
-	public ServerListener(String name, Exchange ex, ServerAccount account,
+	public ServerListener(String name, ServerAccount account,
 			HashMap<String, ServerAccount> addressBook) {
 		this.name = name;
-		this.ex = ex;
 		this.addressBook = addressBook;
 		this.account = account;
 	}
@@ -23,8 +21,8 @@ public class ServerListener implements Runnable {
 	public void run() {
 		while (true) {
 			try {
-				byte[] messageTypeOrNameOfRecipitent = ex.recieveMessage();
-				byte[] messageIn = ex.recieveMessage();
+				byte[] messageTypeOrNameOfRecipitent = account.recieveMessage();
+				byte[] messageIn = account.recieveMessage();
 				// Encrypted with recipients public key if message for
 				// reciptent
 				// Encrypted with server's public key if message for server,

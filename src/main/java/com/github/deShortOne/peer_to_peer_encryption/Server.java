@@ -88,7 +88,7 @@ public class Server {
 
 					ServerAccount acc = new ServerAccount(pubKey, ex);
 					addressBook.put(name, acc);
-					setupListening(name, ex, acc);
+					setupListening(name, acc);
 					System.out.println("New connection from " + name + " "
 							+ addressBook.size());
 					System.out.println("Server done");
@@ -113,9 +113,9 @@ public class Server {
 	 * @param acc name of user of client
 	 * @param ex
 	 */
-	private void setupListening(String name, Exchange ex,
+	private void setupListening(String name,
 			ServerAccount account) {
-		ServerListener sl = new ServerListener(name, ex, account, addressBook);
+		ServerListener sl = new ServerListener(name, account, addressBook);
 		Thread t1 = new Thread(sl);
 		t1.start();
 	}
