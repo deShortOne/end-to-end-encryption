@@ -131,25 +131,6 @@ public class RSAEncryption {
 		return keyFactory.generatePublic(publicKeySpec);
 	}
 
-	/**
-	 * Should be used for debug only.
-	 * 
-	 * @return
-	 * @throws IOException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeySpecException
-	 */
-	@Deprecated
-	public static PrivateKey getCommonPrivateKey()
-			throws IOException, InvalidKeySpecException {
-		File privateKeyFile = new File(publicKeyFileLoc + ".prikey");
-		byte[] privateKeyBytes = Files.readAllBytes(privateKeyFile.toPath());
-
-		PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
-				privateKeyBytes);
-		return keyFactory.generatePrivate(privateKeySpec);
-	}
-
 	public static PublicKey createPublicKey(byte[] publicKeyBytes)
 			throws InvalidKeySpecException {
 
@@ -202,19 +183,7 @@ public class RSAEncryption {
 		return keyFactory.generatePublic(publicKeySpec);
 	}
 
-	public String encrypt(String clearText) throws InvalidKeyException,
-			IllegalBlockSizeException, BadPaddingException {
-		return Base64.getEncoder()
-				.encodeToString(encrypt(clearText, publicKey));
-	}
-
-	public static byte[] encrypt(String clearText, Key key)
-			throws InvalidKeyException, IllegalBlockSizeException,
-			BadPaddingException {
-		return encrypt(clearText.getBytes(StandardCharsets.UTF_8), key);
-	}
-
-	private static byte[] encrypt(byte[] clearText, Key key)
+	public static byte[] encrypt(byte[] clearText, Key key)
 			throws InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException {
 		cipher.init(Cipher.ENCRYPT_MODE, key);
@@ -222,15 +191,6 @@ public class RSAEncryption {
 		byte[] secretMessageBytes = clearText;
 		byte[] encryptedMessageBytes = cipher.doFinal(secretMessageBytes);
 		return encryptedMessageBytes;
-	}
-
-	public String decrypt(String cipherText) throws InvalidKeyException,
-			IllegalBlockSizeException, BadPaddingException {
-
-		return decrypt(
-				Base64.getDecoder()
-						.decode(cipherText.getBytes(StandardCharsets.UTF_8)),
-				privateKey);
 	}
 
 	public String decrypt(byte[] cipherText) throws InvalidKeyException,
@@ -253,7 +213,7 @@ public class RSAEncryption {
 	public byte[] signMessage(String msg, PublicKey key)
 			throws InvalidKeyException, IllegalBlockSizeException,
 			BadPaddingException, NoSuchAlgorithmException, SignatureException {
-
+		
 		return signMessage(msg.getBytes(StandardCharsets.UTF_8), key);
 	}
 
@@ -280,44 +240,6 @@ public class RSAEncryption {
 		sig.update(msg);
 
 		return sig.verify(clearText);
-	}
-
-	/**
-	 * Should only be used with small files!
-	 * 
-	 * @param input
-	 * @param output
-	 * @throws IOException
-	 * @throws NoSuchPaddingException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 * @throws BadPaddingException
-	 * @throws IllegalBlockSizeException
-	 */
-	public void encryptFile(File input, File output)
-			throws IOException, InvalidKeyException, IllegalBlockSizeException,
-			BadPaddingException {
-		byte[] fileBytes = Files.readAllBytes(input.toPath());
-
-		cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-		byte[] encryptedFileBytes = cipher.doFinal(fileBytes);
-
-		try (FileOutputStream stream = new FileOutputStream(output)) {
-			stream.write(encryptedFileBytes);
-		}
-	}
-
-	public void decryptFile(File input, File output)
-			throws IOException, InvalidKeyException, IllegalBlockSizeException,
-			BadPaddingException {
-		byte[] encryptedFileBytes = Files.readAllBytes(input.toPath());
-
-		cipher.init(Cipher.DECRYPT_MODE, privateKey);
-		byte[] decryptedFileBytes = cipher.doFinal(encryptedFileBytes);
-
-		try (FileOutputStream stream = new FileOutputStream(output)) {
-			stream.write(decryptedFileBytes);
-		}
 	}
 
 	/**

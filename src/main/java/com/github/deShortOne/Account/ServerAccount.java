@@ -1,7 +1,10 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.Account;
 
 import java.io.IOException;
 import java.security.PublicKey;
+
+import com.github.deShortOne.peer_to_peer_encryption.Exchange;
+import com.github.deShortOne.peer_to_peer_encryption.MessageType;
 
 /**
  * Information about this person.

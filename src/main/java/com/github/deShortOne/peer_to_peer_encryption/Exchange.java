@@ -46,7 +46,7 @@ public class Exchange {
 	 * @param socket
 	 * @throws IOException
 	 */
-	protected void setSocket(Socket socket) throws IOException {
+	public void setSocket(Socket socket) throws IOException {
 		output = new DataOutputStream(socket.getOutputStream());
 		input = new DataInputStream(socket.getInputStream());
 		setStream = true;
@@ -57,7 +57,7 @@ public class Exchange {
 	 * @param message
 	 * @throws IOException called when sockets are not yet set
 	 */
-	protected void sendMessage(byte[] message) throws IOException {
+	public void sendMessage(byte[] message) throws IOException {
 		if (!setStream) {
 			throw new IOException("Socket not configured");
 		}
@@ -72,7 +72,7 @@ public class Exchange {
 	 * @return
 	 * @throws IOException
 	 */
-	protected byte[] recieveMessage() throws IOException {
+	public byte[] recieveMessage() throws IOException {
 		int lengthOfMessage = input.readInt();
 		byte[] out = new byte[lengthOfMessage];
 		input.readFully(out);

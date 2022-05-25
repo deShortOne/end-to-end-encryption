@@ -70,7 +70,6 @@ public class CryptMessage {
 	 *         message
 	 */
 	public static byte[] createMessage(byte[] clearMessage, PublicKey pubKey) {
-
 		try {
 			SecretKey key = AESEncryption.generateKey(256);
 			IvParameterSpec iv = AESEncryption.generateIv();
@@ -79,7 +78,8 @@ public class CryptMessage {
 			sb.append(Base64.getEncoder().encodeToString(key.getEncoded()));
 			sb.append(Base64.getEncoder().encodeToString(iv.getIV()));
 
-			byte[] base = RSAEncryption.encrypt(sb.toString(), pubKey);
+			byte[] base = RSAEncryption.encrypt(sb.toString().getBytes(),
+					pubKey);
 
 			byte[] encryptedMsg = AESEncryption.encrypt(algorithm, clearMessage,
 					key, iv);
@@ -119,22 +119,9 @@ public class CryptMessage {
 			outputStream.write(encryptedMsg);
 
 			return outputStream.toByteArray();
-		} catch (NoSuchAlgorithmException e) {
-			System.err.println("AES Encryption algorithm incorrect");
-		} catch (IllegalBlockSizeException e) {
-			e.printStackTrace();
-		} catch (BadPaddingException e) {
-			e.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			e.printStackTrace();
-		} catch (InvalidKeyException e) {
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// From ByteArrayOutputStream?
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
+		} catch (NoSuchAlgorithmException | IOException | InvalidKeyException | NoSuchPaddingException
+				| InvalidAlgorithmParameterException | IllegalBlockSizeException
+				| BadPaddingException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -174,11 +161,11 @@ public class CryptMessage {
 		} else {
 			cipherMessage = new byte[cipherIn[n++]];
 		}
-		
+
 		for (int size = 0; size < cipherBase.length; size++, n++) {
 			cipherBase[size] = cipherIn[n];
 		}
-		
+
 		for (int size = 0; size < cipherMessage.length; size++, n++) {
 			cipherMessage[size] = cipherIn[n];
 		}
@@ -210,108 +197,5 @@ public class CryptMessage {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-	/**
-	 * 
-	 * @param base
-	 * @param cipherMessage
-	 * @param priKey
-	 * @return
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchPaddingException
-	 * @throws IllegalBlockSizeException
-	 * @throws BadPaddingException
-	 * @throws InvalidAlgorithmParameterException
-	 */
-	@Deprecated
-	public static byte[] recieveMessage(byte[] cipherBase, byte[] cipherMessage,
-			PrivateKey priKey) throws InvalidKeyException {
-
-		String base;
-		try {
-			base = RSAEncryption.decrypt(cipherBase, priKey);
-		} catch (IllegalBlockSizeException | BadPaddingException e) {
-			e.printStackTrace();
-			return "_RSAEncryption_fault_".getBytes();
-		}
-
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < 44; i++) {
-			sb.append(base.charAt(i));
-		}
-		SecretKey key = new SecretKeySpec(
-				Base64.getDecoder().decode(sb.toString()), 0, 32, "AES");
-
-		sb.setLength(0);
-		for (int i = 44; i < 68; i++) {
-			sb.append(base.charAt(i));
-		}
-		IvParameterSpec iv = new IvParameterSpec(
-				Base64.getDecoder().decode(sb.toString()));
-
-		try {
-			return AESEncryption.decrypt(algorithm, cipherMessage, key, iv);
-		} catch (NoSuchPaddingException | NoSuchAlgorithmException
-				| InvalidAlgorithmParameterException | BadPaddingException
-				| IllegalBlockSizeException e) {
-			e.printStackTrace();
-			return "_AESEncryption_fault_".getBytes();
-		}
-	}
-
-	public static byte[][] sendFile(File file, PublicKey pubKey)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException,
-			IOException {
-
-		SecretKey key = AESEncryption.generateKey(256);
-		IvParameterSpec iv = AESEncryption.generateIv();
-
-		StringBuilder sb = new StringBuilder();
-		sb.append(Base64.getEncoder().encodeToString(key.getEncoded()));
-		sb.append(Base64.getEncoder().encodeToString(iv.getIV()));
-
-		byte[] base = RSAEncryption.encrypt(sb.toString(), pubKey);
-
-		byte[] encryptedFile = AESEncryption.encryptFile(algorithm, key, iv,
-				file);
-
-		return new byte[][] { base, encryptedFile };
-	}
-
-	/**
-	 * Currently deprecated as is incorrect
-	 */
-	@Deprecated
-	public static String recieveFile(byte[] cipherBase, byte[] cipherFile,
-			PrivateKey priKey)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException {
-
-		String base = RSAEncryption.decrypt(cipherBase, priKey);
-
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < 44; i++) {
-			sb.append(base.charAt(i));
-		}
-		SecretKey key = new SecretKeySpec(
-				Base64.getDecoder().decode(sb.toString()), 0, 32, "AES");
-
-		sb.setLength(0);
-		for (int i = 44; i < 68; i++) {
-			sb.append(base.charAt(i));
-		}
-		IvParameterSpec iv = new IvParameterSpec(
-				Base64.getDecoder().decode(sb.toString()));
-
-		byte[] clearMsg = AESEncryption.decrypt(algorithm, cipherFile, key, iv);
-		clearMsg.clone();
-		return null;
 	}
 }

@@ -1,4 +1,4 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.ClientConnection;
 
 import javafx.scene.control.TextArea;
 

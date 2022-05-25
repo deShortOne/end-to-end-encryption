@@ -10,6 +10,9 @@ import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 
+import com.github.deShortOne.ClientConnection.Client;
+import com.github.deShortOne.ServerConnection.Server;
+
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;

@@ -1,4 +1,4 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.ClientConnection;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -12,6 +12,10 @@ import javax.crypto.NoSuchPaddingException;
 
 import com.baeldung.encryption.CryptMessage;
 import com.baeldung.encryption.RSAEncryption;
+import com.github.deShortOne.Account.ClientAccount;
+import com.github.deShortOne.Account.ServerAccount;
+import com.github.deShortOne.peer_to_peer_encryption.Exchange;
+import com.github.deShortOne.peer_to_peer_encryption.MessageWindow;
 
 public class Client {
 

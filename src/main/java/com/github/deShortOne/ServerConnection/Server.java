@@ -1,4 +1,4 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.ServerConnection;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -14,6 +14,8 @@ import javax.crypto.NoSuchPaddingException;
 
 import com.baeldung.encryption.CryptMessage;
 import com.baeldung.encryption.RSAEncryption;
+import com.github.deShortOne.Account.ServerAccount;
+import com.github.deShortOne.peer_to_peer_encryption.Exchange;
 
 public class Server {
 

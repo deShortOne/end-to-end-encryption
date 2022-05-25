@@ -5,6 +5,8 @@ import java.net.ConnectException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.github.deShortOne.ClientConnection.Client;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
