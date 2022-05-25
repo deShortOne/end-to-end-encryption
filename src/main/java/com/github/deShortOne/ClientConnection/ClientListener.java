@@ -1,4 +1,4 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.ClientConnection;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,6 +7,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
 import com.baeldung.encryption.CryptMessage;
+import com.github.deShortOne.Account.ClientAccount;
+import com.github.deShortOne.Account.ServerAccount;
+import com.github.deShortOne.peer_to_peer_encryption.MessageType;
+import com.github.deShortOne.peer_to_peer_encryption.MessageWindow;
 
 public class ClientListener implements Runnable {
 

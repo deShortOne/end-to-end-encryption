@@ -1,7 +1,9 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.Account;
 
 import java.io.IOException;
 import java.security.PublicKey;
+
+import com.github.deShortOne.ClientConnection.ConversationPage;
 
 public class ClientAccount extends Account {
 

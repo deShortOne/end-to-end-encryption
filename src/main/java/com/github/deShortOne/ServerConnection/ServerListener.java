@@ -1,8 +1,11 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.ServerConnection;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+
+import com.github.deShortOne.Account.ServerAccount;
+import com.github.deShortOne.peer_to_peer_encryption.MessageType;
 
 public class ServerListener implements Runnable {
 
