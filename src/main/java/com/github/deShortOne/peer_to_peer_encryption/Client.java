@@ -27,13 +27,13 @@ public class Client {
 	 */
 	private Thread serverListener;
 
-	private Account serverConnection;
+	private ServerAccount serverConnection;
 
 	private CryptMessage cm;
 
 	/**
-	 * Name + conversation page linked to it. Name should be class called Object
-	 * which holds other information like public key
+	 * Name + Client Account. Client Account holds public key, conversation page
+	 * and exchange connection.
 	 */
 	private HashMap<String, ClientAccount> messages = new HashMap<>();
 
@@ -71,11 +71,8 @@ public class Client {
 	 */
 	public void sendMessage(String name, String msg) throws IOException {
 		ClientAccount recievingPerson = messages.get(name);
-		recievingPerson.addMessage(msg);
-
-		recievingPerson.sendMessage(name.getBytes());
-		recievingPerson.sendMessage(msg.getBytes());
-
+		// recievingPerson.addMessage(msg);
+		recievingPerson.sendMessage(msg);
 	}
 
 	public ConversationPage getMessages(String name) {
@@ -90,8 +87,7 @@ public class Client {
 	 * @throws IOException
 	 */
 	public void addFriend(String recipitent) throws IOException {
-		serverConnection.sendMessage(MessageType.NEWFRIEND.name().getBytes());
-		serverConnection.sendMessage(recipitent.getBytes());
+		serverConnection.sendFriendRequest(recipitent);
 	}
 
 	/**
@@ -123,8 +119,7 @@ public class Client {
 			System.exit(1);
 		}
 
-		serverConnection.sendMessage(name.getBytes());
-		serverConnection.sendMessage(cm.getPublicKey());
+		serverConnection.sendMessage(name, cm.getPublicKey());
 		System.out.println("Client done");
 	}
 
@@ -132,62 +127,8 @@ public class Client {
 	 * Listens to server.
 	 */
 	private void listenToServer() {
-		serverListener = new Thread(() -> {
-			while (true) {
-				try {
-					byte[] senderB = serverConnection.recieveMessage();
-					byte[] msgInTmpB = serverConnection.recieveMessage();
-
-					// decode both sender and msgInTmp
-
-					String sender = new String(senderB, StandardCharsets.UTF_8);
-					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
-
-					if (messages.containsKey(sender)) {
-						messages.get(sender).addMessage(msg);
-					} else if (sender.equals(MessageType.NEWFRIEND.name())) {
-						PublicKey pubKey = null;
-
-						try {
-							pubKey = CryptMessage.createPublicKey(
-									serverConnection.recieveMessage());
-						} catch (InvalidKeySpecException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-
-						if (pubKey == null) {
-							System.err.println(
-									"Invalid pubkey>>>>>>>>>>>>>>>>>>>.");
-							return;
-						}
-
-						ClientAccount newAccount = new ClientAccount(null,
-								new ConversationPage(), serverConnection.getExchange());
-
-						if (messages.containsKey(msg)) {
-							messages.remove(msg);
-
-							messages.put(msg, newAccount);
-							messages.get(msg).addMessage(
-									msg + " has recieved your invite!");
-							System.out.println(name + " contains!");
-						} else {
-							messages.put(msg, newAccount);
-							messages.get(msg).addMessage(msg
-									+ " wants to be your friend!\nReply to accept!");
-							System.out.println("New person!");
-							mw.addContact(msg);
-						}
-
-					}
-
-				} catch (IOException e) {
-					e.printStackTrace();
-					break;
-				}
-			}
-		});
+		ClientListener cl = new ClientListener(serverConnection, messages, mw);
+		serverListener = new Thread(cl);
 		serverListener.start();
 	}
 }

@@ -64,16 +64,6 @@ public class Server {
 		System.out.println("Server stop");
 	}
 
-	private byte[] recieveEncryptedMessage(Exchange ex) throws IOException {
-		byte[] encryptedMsg = ex.recieveMessage();
-
-		return recieveEncryptedMessage(encryptedMsg);
-	}
-
-	private byte[] recieveEncryptedMessage(byte[] encryptedMsg) {
-		return cm.recieveMessage(encryptedMsg);
-	}
-
 	/**
 	 * Creates new connection with new clients.
 	 */
@@ -95,8 +85,8 @@ public class Server {
 					} catch (InvalidKeySpecException e) {
 						e.printStackTrace();
 					}
-					
-					Account acc = new ServerAccount(pubKey, ex);
+
+					ServerAccount acc = new ServerAccount(pubKey, ex);
 					addressBook.put(name, acc);
 					setupListening(name, ex, acc);
 					System.out.println("New connection from " + name + " "
@@ -115,7 +105,7 @@ public class Server {
 			}
 		});
 		newConnections.start();
-		
+
 	}
 
 	/**
@@ -124,7 +114,8 @@ public class Server {
 	 * @param acc name of user of client
 	 * @param ex
 	 */
-	private void setupListening(String name, Exchange ex, Account account) {
+	private void setupListening(String name, Exchange ex,
+			ServerAccount account) {
 		listeningToCurrentConnections = new Thread(() -> {
 			while (true) {
 				try {
@@ -136,19 +127,19 @@ public class Server {
 					// cause duh
 
 					// Decode msgType using Server's private key
-					String sendTo = new String(messageTypeOrNameOfRecipitent, StandardCharsets.UTF_8);
+					String sendTo = new String(messageTypeOrNameOfRecipitent,
+							StandardCharsets.UTF_8);
 
 					if (addressBook.containsKey(sendTo)) {
-						Account recieveMessageAccount = addressBook.get(sendTo);
+						ServerAccount recieveMessageAccount = (ServerAccount) addressBook
+								.get(sendTo);
 
 						// The person's name
-						recieveMessageAccount.sendMessage(name.getBytes());
-						// name will need to be encrypted
-						recieveMessageAccount.sendMessage(messageIn);
 
 						System.out.printf("%s send message to %s: %s%n", name,
 								sendTo,
 								new String(messageIn, StandardCharsets.UTF_8));
+						recieveMessageAccount.sendMessage(name, messageIn);
 					} else if (sendTo.equals(MessageType.NEWFRIEND.name())) {
 						// decrypt inMsg to find person
 
@@ -157,25 +148,20 @@ public class Server {
 
 						if (addressBook.containsKey(recieveRequestName)) {
 							// send to new friend request
-							Account receiveRequestAccount = addressBook.get(recieveRequestName);
-							receiveRequestAccount.sendMessage(
-									MessageType.NEWFRIEND.name().getBytes());
-							receiveRequestAccount.sendMessage(name.getBytes());
-							receiveRequestAccount.sendMessage(
+							ServerAccount receiveRequestAccount = (ServerAccount) addressBook
+									.get(recieveRequestName);
+
+							receiveRequestAccount.friendRequest(name,
 									account.getPublicKey().getEncoded());
-							// give pub key
 
 							// send requester information about new person
 							// TODO wait for request to be accepted
-							ex.sendMessage(
-									MessageType.NEWFRIEND.name().getBytes());
-							ex.sendMessage(recieveRequestName.getBytes());
-							ex.sendMessage(receiveRequestAccount.getPublicKey().getEncoded());
-
-						} else {
-							// Person no exist, so communicate that
-//							ex.sendMessage(MessageType.NO.name().getBytes());
+							account.friendRequest(recieveRequestName,
+									receiveRequestAccount.getPublicKey()
+											.getEncoded());
 						}
+						// TODO if person no exist, so communicate that
+
 					} else {
 						System.out.println("Invalid user/ command");
 					}
