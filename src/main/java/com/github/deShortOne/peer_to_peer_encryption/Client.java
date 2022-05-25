@@ -125,6 +125,7 @@ public class Client {
 
 		serverConnection.sendMessage(name.getBytes());
 		serverConnection.sendMessage(cm.getPublicKey());
+		System.out.println("Client done");
 	}
 
 	/**

@@ -86,21 +86,22 @@ public class Server {
 
 					ex.sendMessage(cm.getPublicKey());
 
-					String name = new String(recieveEncryptedMessage(ex),
+					String name = new String(ex.recieveMessage(),
 							StandardCharsets.UTF_8);
 					PublicKey pubKey = null;
 					try {
 						pubKey = CryptMessage
-								.createPublicKey(recieveEncryptedMessage(ex));
+								.createPublicKey(ex.recieveMessage());
 					} catch (InvalidKeySpecException e) {
 						e.printStackTrace();
 					}
-
+					
 					Account acc = new ServerAccount(pubKey, ex);
 					addressBook.put(name, acc);
 					setupListening(name, ex, acc);
 					System.out.println("New connection from " + name + " "
 							+ addressBook.size());
+					System.out.println("Server done");
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -114,6 +115,7 @@ public class Server {
 			}
 		});
 		newConnections.start();
+		
 	}
 
 	/**
