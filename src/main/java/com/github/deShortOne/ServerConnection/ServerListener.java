@@ -56,12 +56,12 @@ public class ServerListener implements Runnable {
 						ServerAccount receiveRequestAccount = (ServerAccount) addressBook
 								.get(recieveRequestName);
 
-						receiveRequestAccount.friendRequest(name,
+						receiveRequestAccount.friendRequest(name.getBytes(),
 								account.getPublicKey().getEncoded());
 
 						// send requester information about new person
 						// TODO wait for request to be accepted
-						account.friendRequest(recieveRequestName,
+						account.friendRequest(recieveRequestName.getBytes(),
 								receiveRequestAccount.getPublicKey()
 										.getEncoded());
 					}

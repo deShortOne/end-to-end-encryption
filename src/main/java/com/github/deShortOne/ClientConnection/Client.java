@@ -129,7 +129,7 @@ public class Client {
 	 * Listens to server.
 	 */
 	private void listenToServer() {
-		ClientListener cl = new ClientListener(serverConnection, messages, mw);
+		ClientListener cl = new ClientListener(serverConnection, messages, mw, cm);
 		serverListener = new Thread(cl);
 		serverListener.start();
 	}

@@ -7,6 +7,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
 import com.baeldung.encryption.CryptMessage;
+import com.baeldung.encryption.RSAEncryption;
 import com.github.deShortOne.Account.ClientAccount;
 import com.github.deShortOne.Account.ServerAccount;
 import com.github.deShortOne.end_to_end_encryption.MessageType;
@@ -19,12 +20,16 @@ public class ClientListener implements Runnable {
 	private HashMap<String, ClientAccount> messages;
 
 	private MessageWindow mw;
+	
+	private CryptMessage cm;
 
 	public ClientListener(ServerAccount serverConnection,
-			HashMap<String, ClientAccount> messages, MessageWindow mw) {
+			HashMap<String, ClientAccount> messages, MessageWindow mw,
+			CryptMessage cm) {
 		this.serverConnection = serverConnection;
 		this.messages = messages;
 		this.mw = mw;
+		this.cm = cm;
 	}
 
 	public void run() {
@@ -35,11 +40,12 @@ public class ClientListener implements Runnable {
 
 				// decode both sender and msgInTmp
 				String sender = new String(senderB, StandardCharsets.UTF_8);
-				String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
 
 				if (messages.containsKey(sender)) {
+					String msg = new String(cm.recieveMessage(msgInTmpB), StandardCharsets.UTF_8);
 					messages.get(sender).addMessage(msg);
 				} else if (sender.equals(MessageType.NEWFRIEND.name())) {
+					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
 					addFriend(msg);
 				}
 
@@ -65,7 +71,7 @@ public class ClientListener implements Runnable {
 			return;
 		}
 
-		ClientAccount newAccount = new ClientAccount(nameOfOther, null,
+		ClientAccount newAccount = new ClientAccount(nameOfOther, pubKey,
 				new ConversationPage(), serverConnection);
 
 		if (messages.containsKey(nameOfOther)) {
