@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+import com.baeldung.encryption.CryptMessage;
 import com.github.deShortOne.Account.ServerAccount;
 import com.github.deShortOne.end_to_end_encryption.MessageType;
 
@@ -19,7 +20,6 @@ public class ServerListener implements Runnable {
 		this.addressBook = addressBook;
 		this.account = account;
 	}
-	
 
 	public void run() {
 		while (true) {
@@ -52,6 +52,7 @@ public class ServerListener implements Runnable {
 							StandardCharsets.UTF_8);
 
 					if (addressBook.containsKey(recieveRequestName)) {
+
 						// send to new friend request
 						ServerAccount receiveRequestAccount = (ServerAccount) addressBook
 								.get(recieveRequestName);

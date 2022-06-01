@@ -7,7 +7,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 
 import com.baeldung.encryption.CryptMessage;
-import com.baeldung.encryption.RSAEncryption;
 import com.github.deShortOne.Account.ClientAccount;
 import com.github.deShortOne.Account.ServerAccount;
 import com.github.deShortOne.end_to_end_encryption.MessageType;
@@ -61,7 +60,7 @@ public class ClientListener implements Runnable {
 
 		try {
 			pubKey = CryptMessage
-					.createPublicKey(serverConnection.recieveMessage());
+					.createPublicKey(cm.recieveMessage(serverConnection.recieveMessage()));
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
 		}

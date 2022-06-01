@@ -3,7 +3,6 @@ package com.github.deShortOne.Account;
 import java.io.IOException;
 import java.security.PublicKey;
 
-import com.baeldung.encryption.CryptMessage;
 import com.github.deShortOne.ClientConnection.ConversationPage;
 
 public class ClientAccount extends Account {
@@ -72,7 +71,7 @@ public class ClientAccount extends Account {
 	 */
 	public void sendMessage(String cMsg) throws IOException {
 		addMessage(cMsg);
-		byte[] encrpytedMsg = CryptMessage.createMessage(cMsg.getBytes(), getPublicKey());
+		byte[] encrpytedMsg = super.encryptMessage(cMsg.getBytes());
 		serverConnection.sendMessage(nameOfRecipitent, encrpytedMsg);
 	}
 }
