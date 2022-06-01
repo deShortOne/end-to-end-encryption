@@ -13,12 +13,14 @@ public class ServerListener implements Runnable {
 	private String name;
 	private HashMap<String, ServerAccount> addressBook;
 	private ServerAccount account;
+	private CryptMessage cm;
 
 	public ServerListener(String name, ServerAccount account,
-			HashMap<String, ServerAccount> addressBook) {
+			HashMap<String, ServerAccount> addressBook, CryptMessage cm) {
 		this.name = name;
 		this.addressBook = addressBook;
 		this.account = account;
+		this.cm = cm;
 	}
 
 	public void run() {
@@ -32,7 +34,7 @@ public class ServerListener implements Runnable {
 				// cause duh
 
 				// Decode msgType using Server's private key
-				String sendTo = new String(messageTypeOrNameOfRecipitent,
+				String sendTo = new String(cm.recieveMessage(messageTypeOrNameOfRecipitent),
 						StandardCharsets.UTF_8);
 
 				if (addressBook.containsKey(sendTo)) {

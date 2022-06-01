@@ -119,9 +119,9 @@ public class CryptMessage {
 			outputStream.write(encryptedMsg);
 
 			return outputStream.toByteArray();
-		} catch (NoSuchAlgorithmException | IOException | InvalidKeyException | NoSuchPaddingException
-				| InvalidAlgorithmParameterException | IllegalBlockSizeException
-				| BadPaddingException e) {
+		} catch (NoSuchAlgorithmException | IOException | InvalidKeyException
+				| NoSuchPaddingException | InvalidAlgorithmParameterException
+				| IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 		}
 		return null;
@@ -163,7 +163,15 @@ public class CryptMessage {
 		}
 
 		for (int size = 0; size < cipherBase.length; size++, n++) {
-			cipherBase[size] = cipherIn[n];
+			try {
+				cipherBase[size] = cipherIn[n];
+			} catch (IndexOutOfBoundsException e) {
+
+				for (byte b : cipherIn) {
+					System.out.println(b);
+				}
+				throw e;
+			}
 		}
 
 		for (int size = 0; size < cipherMessage.length; size++, n++) {

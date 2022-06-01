@@ -78,7 +78,7 @@ public class Server {
 
 					ex.sendMessage(cm.getPublicKey());
 
-					String name = new String(ex.recieveMessage(),
+					String name = new String(cm.recieveMessage(ex.recieveMessage()),
 							StandardCharsets.UTF_8);
 					PublicKey pubKey = null;
 					try {
@@ -117,7 +117,7 @@ public class Server {
 	 */
 	private void setupListening(String name,
 			ServerAccount account) {
-		ServerListener sl = new ServerListener(name, account, addressBook);
+		ServerListener sl = new ServerListener(name, account, addressBook, cm);
 		Thread t1 = new Thread(sl);
 		t1.start();
 	}

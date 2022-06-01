@@ -38,7 +38,7 @@ public class ClientListener implements Runnable {
 				byte[] msgInTmpB = serverConnection.recieveMessage();
 
 				// decode both sender and msgInTmp
-				String sender = new String(senderB, StandardCharsets.UTF_8);
+				String sender = new String(cm.recieveMessage(senderB), StandardCharsets.UTF_8);
 
 				if (messages.containsKey(sender)) {
 					String msg = new String(cm.recieveMessage(msgInTmpB), StandardCharsets.UTF_8);
