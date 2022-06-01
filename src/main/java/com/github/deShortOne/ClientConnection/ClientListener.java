@@ -9,8 +9,8 @@ import java.util.HashMap;
 import com.baeldung.encryption.CryptMessage;
 import com.github.deShortOne.Account.ClientAccount;
 import com.github.deShortOne.Account.ServerAccount;
-import com.github.deShortOne.peer_to_peer_encryption.MessageType;
-import com.github.deShortOne.peer_to_peer_encryption.MessageWindow;
+import com.github.deShortOne.end_to_end_encryption.MessageType;
+import com.github.deShortOne.end_to_end_encryption.MessageWindow;
 
 public class ClientListener implements Runnable {
 

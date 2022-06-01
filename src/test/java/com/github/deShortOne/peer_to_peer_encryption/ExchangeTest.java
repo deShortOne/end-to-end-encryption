@@ -11,6 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
+import com.github.deShortOne.end_to_end_encryption.Exchange;
+
 public class ExchangeTest {
 
 	@Test

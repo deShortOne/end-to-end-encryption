@@ -15,7 +15,7 @@ import javax.crypto.NoSuchPaddingException;
 import com.baeldung.encryption.CryptMessage;
 import com.baeldung.encryption.RSAEncryption;
 import com.github.deShortOne.Account.ServerAccount;
-import com.github.deShortOne.peer_to_peer_encryption.Exchange;
+import com.github.deShortOne.end_to_end_encryption.Exchange;
 
 public class Server {
 

@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import com.github.deShortOne.Account.ServerAccount;
-import com.github.deShortOne.peer_to_peer_encryption.MessageType;
+import com.github.deShortOne.end_to_end_encryption.MessageType;
 
 public class ServerListener implements Runnable {
 

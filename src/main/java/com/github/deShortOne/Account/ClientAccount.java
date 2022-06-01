@@ -71,6 +71,7 @@ public class ClientAccount extends Account {
 	 */
 	public void sendMessage(String msg) throws IOException {
 		addMessage(msg);
-		serverConnection.sendMessage(nameOfRecipitent, msg.getBytes());
+		byte[] encrpytedMsg = msg.getBytes();
+		serverConnection.sendMessage(nameOfRecipitent, encrpytedMsg);
 	}
 }

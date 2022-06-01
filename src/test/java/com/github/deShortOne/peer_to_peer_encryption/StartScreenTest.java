@@ -15,6 +15,7 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 
 import com.baeldung.encryption.RSAEncryption;
+import com.github.deShortOne.end_to_end_encryption.StartScreen;
 import com.opencsv.CSVWriter;
 
 import javafx.scene.Node;

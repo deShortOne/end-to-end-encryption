@@ -1,4 +1,4 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.end_to_end_encryption;
 
 import com.baeldung.encryption.CryptMessage;
 

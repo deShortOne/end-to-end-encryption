@@ -3,8 +3,8 @@ package com.github.deShortOne.Account;
 import java.io.IOException;
 import java.security.PublicKey;
 
-import com.github.deShortOne.peer_to_peer_encryption.Exchange;
-import com.github.deShortOne.peer_to_peer_encryption.MessageType;
+import com.github.deShortOne.end_to_end_encryption.Exchange;
+import com.github.deShortOne.end_to_end_encryption.MessageType;
 
 /**
  * Information about this person.
@@ -47,9 +47,9 @@ public class ServerAccount extends Account {
 	 * @param message
 	 * @throws IOException 
 	 */
-	public void sendMessage(String sender, byte[] message) throws IOException {
-		ex.sendMessage(sender.getBytes());
-		ex.sendMessage(message);
+	public void sendMessage(String cSender, byte[] eMsg) throws IOException {
+		ex.sendMessage(cSender.getBytes());
+		ex.sendMessage(eMsg);
 	}
 
 	/**
@@ -58,9 +58,9 @@ public class ServerAccount extends Account {
 	 * @param name
 	 * @throws IOException 
 	 */
-	public void sendFriendRequest(String name) throws IOException {
+	public void sendFriendRequest(String cName) throws IOException {
 		ex.sendMessage(MessageType.NEWFRIEND.name().getBytes());
-		ex.sendMessage(name.getBytes());
+		ex.sendMessage(cName.getBytes());
 	}
 
 	/**
@@ -71,10 +71,10 @@ public class ServerAccount extends Account {
 	 *               requested, null otherwise
 	 * @throws IOException 
 	 */
-	public void friendRequest(String name, byte[] pubKey) throws IOException {
+	public void friendRequest(byte[] eName, byte[] ePubKey) throws IOException {
 		ex.sendMessage(MessageType.NEWFRIEND.name().getBytes());
-		ex.sendMessage(name.getBytes());
-		ex.sendMessage(pubKey);
+		ex.sendMessage(eName);
+		ex.sendMessage(ePubKey);
 	}
 
 	/**

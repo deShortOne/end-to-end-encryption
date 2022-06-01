@@ -1,4 +1,4 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.end_to_end_encryption;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -46,7 +46,7 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	static String name = "B";
+	static String name = "A";
 
 	/**
 	 * For running when called from main.
