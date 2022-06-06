@@ -2,6 +2,7 @@ package com.github.deShortOne.peer_to_peer_encryption;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -33,10 +34,10 @@ public class AESEncryptionTest {
 		SecretKey key = AESEncryption.generateKey(128);
 		IvParameterSpec ivParameterSpec = AESEncryption.generateIv();
 		String algorithm = "AES/CBC/PKCS5Padding";
-		byte[] cipherText = AESEncryption.encrypt(algorithm, input, key,
+		byte[] cipherText = AESEncryption.encrypt(algorithm, input.getBytes(), key,
 				ivParameterSpec);
-		String plainText = AESEncryption.decrypt(algorithm, cipherText, key,
-				ivParameterSpec);
+		String plainText = new String(AESEncryption.decrypt(algorithm, cipherText, key,
+				ivParameterSpec), StandardCharsets.UTF_8);
 		Assertions.assertEquals(input, plainText);
 	}
 
@@ -71,10 +72,10 @@ public class AESEncryptionTest {
 		String salt = "12345678";
 		IvParameterSpec ivParameterSpec = AESEncryption.generateIv();
 		SecretKey key = AESEncryption.getKeyFromPassword(password, salt);
-		byte[] cipherText = AESEncryption.encrypt(algorithm, plainText, key,
+		byte[] cipherText = AESEncryption.encrypt(algorithm, plainText.getBytes(), key,
 				ivParameterSpec);
-		String decryptedCipherText = AESEncryption.decrypt(algorithm,
-				cipherText, key, ivParameterSpec);
+		String decryptedCipherText = new String(AESEncryption.decrypt(algorithm,
+				cipherText, key, ivParameterSpec), StandardCharsets.UTF_8);
 		Assertions.assertEquals(plainText, decryptedCipherText);
 
 		// Should be calling below function

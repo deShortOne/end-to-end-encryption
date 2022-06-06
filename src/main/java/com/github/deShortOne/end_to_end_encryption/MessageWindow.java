@@ -1,9 +1,11 @@
-package com.github.deShortOne.peer_to_peer_encryption;
+package com.github.deShortOne.end_to_end_encryption;
 
 import java.io.IOException;
 import java.net.ConnectException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.github.deShortOne.ClientConnection.Client;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -44,7 +46,7 @@ public class MessageWindow extends Application {
 	private VBox contactsListRoot;
 
 	// Alternate name between A and B.
-	static String name = "A";
+	static String name = "B";
 
 	/**
 	 * For running when called from main.
@@ -148,7 +150,7 @@ public class MessageWindow extends Application {
 		double diameter = 30;
 		Button btn = new Button("+");
 		btn.setOnAction(e -> addNewFriend());
-		
+
 		btn.setShape(new Circle(diameter));
 		btn.setMinSize(diameter, diameter);
 		btn.setMaxSize(diameter, diameter);
@@ -159,46 +161,43 @@ public class MessageWindow extends Application {
 	}
 
 	// to be made private
-	public void addContact(String name) {
+	public void addContact(String otherPerson) {
 		Platform.runLater(() -> {
-			Button b = new Button(name);
+			Button b = new Button(otherPerson);
 			b.setOnAction(e -> {
-				setCurrContact(name);
+				setCurrContact(otherPerson);
 			});
 			contactsListRoot.getChildren().add(b);
 		});
 	}
 
-	private void setCurrContact(String name) {
-		inputoutputScroll.setContent(client.getMessages(name).getMessages());
-		currentTalkingToPerson = name;
+	private void setCurrContact(String otherPerson) {
+		inputoutputScroll.setContent(
+				client.getMessages(otherPerson).getMessages());
+		currentTalkingToPerson = otherPerson;
 	}
-	
+
 	private void addNewFriend() {
 		Stage s0 = new Stage();
-		
+
 		VBox root = new VBox();
 		Label l = new Label("Type in name");
 		TextField name = new TextField();
 		Button b = new Button("Send friend request");
 		b.setOnAction(e -> {
 			try {
-				boolean exist = client.addFriend(name.getText());
-				if (exist) {
-					addContact(name.getText());
-				}
+				client.addFriend(name.getText());
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
 			s0.close();
 		});
-		
+
 		root.getChildren().addAll(l, name, b);
-		
-		
+
 		s0.setScene(new Scene(root));
 		s0.show();
-		
+
 		// TODO change modality to ensure friend request is sent
 	}
 }
