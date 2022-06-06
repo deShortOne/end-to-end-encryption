@@ -44,7 +44,7 @@ public class ClientListener implements Runnable {
 					String msg = new String(cm.recieveMessage(msgInTmpB), StandardCharsets.UTF_8);
 					messages.get(sender).addMessage(msg);
 				} else if (sender.equals(MessageType.NEWFRIEND.name())) {
-					String msg = new String(msgInTmpB, StandardCharsets.UTF_8);
+					String msg = new String(cm.recieveMessage(msgInTmpB), StandardCharsets.UTF_8);
 					addFriend(msg);
 				}
 

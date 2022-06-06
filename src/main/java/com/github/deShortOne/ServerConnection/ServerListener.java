@@ -50,7 +50,7 @@ public class ServerListener implements Runnable {
 				} else if (sendTo.equals(MessageType.NEWFRIEND.name())) {
 					// decrypt inMsg to find person
 
-					String recieveRequestName = new String(messageIn,
+					String recieveRequestName = new String(cm.recieveMessage(messageIn),
 							StandardCharsets.UTF_8);
 
 					if (addressBook.containsKey(recieveRequestName)) {

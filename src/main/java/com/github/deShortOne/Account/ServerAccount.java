@@ -60,7 +60,7 @@ public class ServerAccount extends Account {
 	 */
 	public void sendFriendRequest(String cName) throws IOException {
 		ex.sendMessage(super.encryptMessage(MessageType.NEWFRIEND.name().getBytes()));
-		byte[] eName = cName.getBytes(); //super.encryptMessage(cName.getBytes());
+		byte[] eName = super.encryptMessage(cName.getBytes());
 		ex.sendMessage(eName);
 	}
 
@@ -74,7 +74,7 @@ public class ServerAccount extends Account {
 	 */
 	public void friendRequest(byte[] cName, byte[] cPubKey) throws IOException {
 		ex.sendMessage(super.encryptMessage(MessageType.NEWFRIEND.name().getBytes()));
-		ex.sendMessage(cName);
+		ex.sendMessage(super.encryptMessage(cName));
 		ex.sendMessage(super.encryptMessage(cPubKey));
 	}
 
